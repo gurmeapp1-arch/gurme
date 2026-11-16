@@ -488,31 +488,54 @@ export default function RestoranPage() {
             {upcomingSlots.length === 0 ? (
               <p className="text-gray-600">Henüz açık indirimin yok.</p>
             ) : (
-              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
-                {upcomingSlots.map((s) => {
-                  const booked = reservations
-                    .filter((r) => r.slot_id === s.id && r.status !== "cancelled")
-                    .reduce((n, r) => n + r.party_size, 0);
-                  return (
-                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                      <div>
-                        <p className="font-semibold">
-                          {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          %{s.discount_percent} indirim · {booked}/{s.capacity} kişi
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => deleteSlot(s.id)}
-                        className="text-sm text-red-700 underline"
-                      >
-                        Sil
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="space-y-4">
+                {[...new Set(upcomingSlots.map((s) => s.slot_date))].map((d) => (
+                  <div key={d}>
+                    <p className="mb-1.5 text-sm font-semibold text-gray-700">{fmtDate(d)}</p>
+                    <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
+                      {upcomingSlots
+                        .filter((s) => s.slot_date === d)
+                        .map((s) => {
+                          const booked = reservations
+                            .filter((r) => r.slot_id === s.id && r.status !== "cancelled")
+                            .reduce((n, r) => n + r.party_size, 0);
+                          const pct = Math.min(100, Math.round((booked / s.capacity) * 100));
+                          return (
+                            <li
+                              key={s.id}
+                              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                            >
+                              <div className="min-w-[140px]">
+                                <p className="text-lg font-bold">
+                                  {hm(s.start_time)}–{hm(s.end_time)}
+                                </p>
+                                <p className="text-sm text-gray-500">%{s.discount_percent} indirim</p>
+                              </div>
+                              <div className="flex-1 min-w-[120px]">
+                                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                                  <div
+                                    className="h-full rounded-full bg-[#14664a]"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <p className="mt-1 text-xs text-gray-500">
+                                  {booked}/{s.capacity} kişi
+                                  {booked >= s.capacity ? " · dolu" : ""}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => deleteSlot(s.id)}
+                                className="text-sm text-red-700 underline"
+                              >
+                                Sil
+                              </button>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             )}
           </section>
         </div>

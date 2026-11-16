@@ -128,6 +128,12 @@ function RezervasyonForm() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
+      <Link
+        href={`/rezervasyon/restoran/${slot.restaurant_id}`}
+        className="text-sm text-gray-600 underline"
+      >
+        ← Diğer gün ve saatler
+      </Link>
       <div className="card overflow-hidden" style={{ padding: 0 }}>
         {slot.cover_url && (
           // eslint-disable-next-line @next/next/no-img-element

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
-import SlotCard, { type PublicSlot } from "@/components/SlotCard";
+import type { PublicSlot } from "@/components/SlotCard";
+import RestaurantCard, { groupByRestaurant } from "@/components/RestaurantCard";
 
 const DISTRICTS = ["Hisarüstü", "Beşiktaş", "Kadıköy", "Diğer"];
 
@@ -11,16 +12,6 @@ const istDate = (d: Date) =>
   d.toLocaleDateString("sv-SE", { timeZone: "Europe/Istanbul" });
 const hm = (t: string) => t.slice(0, 5);
 const toDate = (d: string, t: string) => new Date(`${d}T${hm(t)}:00+03:00`);
-
-function dayLabel(d: string, now: Date) {
-  if (d === istDate(now)) return "Bugün";
-  if (d === istDate(new Date(now.getTime() + 86400000))) return "Yarın";
-  return new Date(`${d}T12:00:00`).toLocaleDateString("tr-TR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-}
 
 // Sadece müşteri hesaplarının gördüğü keşif ekranı
 export default function Discover() {
@@ -53,21 +44,11 @@ export default function Discover() {
     if (district !== "all") list = list.filter((s) => s.district === district);
     const q = query.trim().toLocaleLowerCase("tr-TR");
     if (q) list = list.filter((s) => s.restaurant_name.toLocaleLowerCase("tr-TR").includes(q));
-    list = [...list].sort(
-      (a, b) =>
-        toDate(a.slot_date, a.start_time).getTime() - toDate(b.slot_date, b.start_time).getTime()
-    );
   }
 
   const ready = loaded && !!now;
 
-  // Güne göre grupla (liste zaten saate göre sıralı)
-  const groups: [string, PublicSlot[]][] = [];
-  for (const s of list) {
-    const g = groups.find((x) => x[0] === s.slot_date);
-    if (g) g[1].push(s);
-    else groups.push([s.slot_date, [s]]);
-  }
+  const restaurants = groupByRestaurant(list);
 
   return (
     <div className="space-y-6">
@@ -119,17 +100,13 @@ export default function Discover() {
         </div>
       )}
 
-      {ready &&
-        groups.map(([day, items]) => (
-          <section key={day}>
-            <h2 className="mb-3 text-xl font-extrabold text-gray-900">{dayLabel(day, now!)}</h2>
-            <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2">
-              {items.map((s) => (
-                <SlotCard key={s.id} slot={s} now={now!} href={`/rezervasyon/${s.id}`} />
-              ))}
-            </div>
-          </section>
-        ))}
+      {ready && (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {restaurants.map((g) => (
+            <RestaurantCard key={g.id} group={g} now={now!} href={`/rezervasyon/restoran/${g.id}`} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

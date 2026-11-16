@@ -5,6 +5,7 @@ import { hm, toDate } from "@/lib/time";
 
 export type PublicSlot = {
   id: string;
+  restaurant_id: string;
   restaurant_name: string;
   district: string;
   address: string | null;
