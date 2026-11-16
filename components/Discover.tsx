@@ -73,7 +73,7 @@ export default function Discover() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold text-[#0a4430]">İndirimli masalar</h1>
-        <p className="mt-1 text-gray-600">Bir masa seç, rezervasyonunu yap.</p>
+        <p className="mt-1 text-gray-600">Beğendiğin masaya dokun, yerini ayır.</p>
       </div>
 
       <div className="flex flex-wrap gap-3">

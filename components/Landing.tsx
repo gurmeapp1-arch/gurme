@@ -3,9 +3,9 @@ import Link from "next/link";
 import GuestOffers from "@/components/GuestOffers";
 
 const STEPS = [
-  { n: "1", title: "Masanı seç", text: "Gün, saat ve indirim oranı baştan belli." },
-  { n: "2", title: "Yerini ayır", text: "Adını ve kaç kişi olduğunu yaz, kodun hazır." },
-  { n: "3", title: "Kodu göster", text: "Hesap öderken kodu söyle, indirim uygulansın." },
+  { n: "1", title: "Bir masa seç", text: "Hangi gün, hangi saat, ne kadar indirim: hepsi kartta yazıyor." },
+  { n: "2", title: "Adını yaz, kodunu al", text: "Kaç kişi geleceğini söylüyorsun, rezervasyon kodun hemen hazır." },
+  { n: "3", title: "Hesapta kodu söyle", text: "Yemeğini ye, hesap gelince kodunu söyle, indirim yapsınlar." },
 ];
 
 // Giriş yapmamış ziyaretçinin gördüğü sayfa: kısa, sakin, yemeğe odaklı
@@ -16,18 +16,18 @@ export default function Landing() {
         <div className="lg:col-span-3">
           <p className="text-sm font-medium text-[#14664a]">Hisarüstü · Beşiktaş · Kadıköy</p>
           <h1 className="mt-2 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-900 sm:text-5xl">
-            Boş kalan masalar, senin için indirimde.
+            Kafe boşken git, daha az öde.
           </h1>
           <p className="mt-4 max-w-lg text-lg text-gray-600">
-            Ders arası, öğleden sonra, akşam öncesi. Restoranlar sakin saatlerinde indirimli masa
-            açıyor, sen yerini ayırıp yemeğe gidiyorsun.
+            Restoranlar sakin olduğu saatlerde indirimli masa açıyor. Sen yerini ayırıyorsun,
+            hesap gelince kodunu söylüyorsun. Bu kadar.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-5">
             <Link href="/kayit" className="btn px-6 py-3">
-              Ücretsiz kayıt ol
+              Kayıt ol
             </Link>
             <Link href="/giris" className="font-semibold text-[#0a4430] underline underline-offset-4">
-              Giriş yap
+              Zaten üyeyim
             </Link>
           </div>
         </div>
@@ -43,7 +43,7 @@ export default function Landing() {
       <GuestOffers />
 
       <section>
-        <h2 className="text-2xl font-extrabold text-gray-900">Nasıl çalışıyor?</h2>
+        <h2 className="text-2xl font-extrabold text-gray-900">Nasıl mı çalışıyor?</h2>
         <div className="mt-5 grid gap-6 sm:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="border-t-2 border-gray-900 pt-3">
@@ -54,7 +54,7 @@ export default function Landing() {
           ))}
         </div>
         <p className="mt-6 text-gray-600">
-          Siteye ödeme yapmıyorsun. İndirim, restoranda hesabı öderken uygulanıyor.
+          Siteye para ödemiyorsun. İndirimi restoran, hesap gelince kendisi uyguluyor.
         </p>
       </section>
     </div>

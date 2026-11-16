@@ -61,7 +61,7 @@ export default function GirisPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="font-display mb-6 text-4xl font-extrabold text-[#0a4430]">Giriş yap</h1>
+      <h1 className="font-display mb-6 text-4xl font-extrabold text-[#0a4430]">Tekrar hoş geldin</h1>
 
       <form onSubmit={submit} className="card space-y-4">
         <div>
@@ -88,7 +88,7 @@ export default function GirisPage() {
       </form>
 
       <p className="mt-4 text-center text-sm">
-        Hesabın yok mu?{" "}
+        Henüz üye değil misin?{" "}
         <Link href={`/kayit${nextQuery}`} className="font-semibold underline">Kayıt ol</Link>
       </p>
     </div>

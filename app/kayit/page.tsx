@@ -105,7 +105,7 @@ export default function KayitPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-6 text-3xl font-extrabold text-[#0a4430]">Kayıt ol</h1>
+      <h1 className="mb-6 text-3xl font-extrabold text-[#0a4430]">Aramıza katıl</h1>
 
       <div className="mb-4 grid grid-cols-2 gap-2">
         <button
@@ -204,7 +204,7 @@ export default function KayitPage() {
       </form>
 
       <p className="mt-4 text-center text-sm">
-        Zaten hesabın var mı?{" "}
+        Zaten üye misin?{" "}
         <Link href="/giris" className="font-semibold underline">Giriş yap</Link>
       </p>
     </div>

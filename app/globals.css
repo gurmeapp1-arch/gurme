@@ -397,3 +397,10 @@ input:focus-visible {
     box-shadow: none;
   }
 }
+
+/* Başlıklar: sıcak, yemek markalarına yakışan font */
+h1,
+h2 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
+}

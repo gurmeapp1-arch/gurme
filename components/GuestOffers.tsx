@@ -40,8 +40,8 @@ export default function GuestOffers() {
 
   return (
     <section>
-      <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Şu an açık indirimler</h2>
-      <p className="mt-1 text-gray-600">Bir masaya tıkla, giriş yapıp yerini ayır.</p>
+      <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Bu aralar boş olan masalar</h2>
+      <p className="mt-1 text-gray-600">Beğendiğin birine dokun, giriş yapınca yerini ayıralım.</p>
       <div className="-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 pb-2">
         {list.map((s) => (
           <SlotCard
