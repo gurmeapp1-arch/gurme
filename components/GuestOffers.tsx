@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
-import { istDate, toDate } from "@/lib/time";
+import { istDate, lastVisibleDate, toDate } from "@/lib/time";
 import type { PublicSlot } from "@/components/SlotCard";
 import RestaurantCard, { groupByRestaurant } from "@/components/RestaurantCard";
 
@@ -24,7 +24,12 @@ export default function GuestOffers() {
   if (!now || !slots) return null;
 
   const list = groupByRestaurant(
-    slots.filter((s) => s.remaining > 0 && toDate(s.slot_date, s.end_time) >= now)
+    slots.filter(
+      (s) =>
+        s.remaining > 0 &&
+        toDate(s.slot_date, s.end_time) >= now &&
+        s.slot_date <= lastVisibleDate(now)
+    )
   ).slice(0, 12);
 
   if (list.length === 0) return null;

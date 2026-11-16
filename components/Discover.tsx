@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
 import type { PublicSlot } from "@/components/SlotCard";
+import { lastVisibleDate } from "@/lib/time";
 import RestaurantCard, { dayLabel, groupByRestaurant } from "@/components/RestaurantCard";
 
 // Gün içi zaman dilimleri (saat olarak)
@@ -50,7 +51,10 @@ export default function Discover() {
   let list: PublicSlot[] = [];
   if (now) {
     list = slots.filter(
-      (s) => s.remaining > 0 && toDate(s.slot_date, s.end_time) >= now
+      (s) =>
+        s.remaining > 0 &&
+        toDate(s.slot_date, s.end_time) >= now &&
+        s.slot_date <= lastVisibleDate(now)
     );
     if (district !== "all") list = list.filter((s) => s.district === district);
     const q = query.trim().toLocaleLowerCase("tr-TR");
@@ -61,7 +65,12 @@ export default function Discover() {
     ? [
         ...new Set(
           slots
-            .filter((s) => s.remaining > 0 && toDate(s.slot_date, s.end_time) >= now)
+            .filter(
+              (s) =>
+                s.remaining > 0 &&
+                toDate(s.slot_date, s.end_time) >= now &&
+                s.slot_date <= lastVisibleDate(now)
+            )
             .map((s) => s.slot_date)
         ),
       ]

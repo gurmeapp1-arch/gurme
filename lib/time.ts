@@ -24,6 +24,11 @@ export function addDays(date: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// Müşteriler en fazla bu kadar gün sonrasına kadar olan masaları görür (işletmeler daha ilerisini açabilir)
+export const MAX_DAYS_AHEAD = 7;
+export const lastVisibleDate = (now: Date): string =>
+  addDays(istDate(now), MAX_DAYS_AHEAD);
+
 // 0 = Pazar ... 6 = Cumartesi
 export const weekdayOf = (date: string): number => new Date(`${date}T12:00:00Z`).getUTCDay();
 

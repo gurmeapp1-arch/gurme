@@ -6,7 +6,7 @@ import { useNow } from "@/lib/useNow";
 import { addDays, hm, istDate, toDate, weekdayOf, WEEKDAYS } from "@/lib/time";
 import type { Slot } from "@/lib/types";
 
-const MAX_SLOTS = 60;
+const MAX_SLOTS = 400;
 
 export default function SlotForm({
   restaurantId,
@@ -221,7 +221,7 @@ export default function SlotForm({
                 value={weeks}
                 onChange={(e) => setWeeks(e.target.value)}
               >
-                {[1, 2, 3, 4, 6, 8].map((n) => (
+                {[1, 2, 4, 8, 12, 26, 52].map((n) => (
                   <option key={n} value={n}>
                     {n} hafta
                   </option>

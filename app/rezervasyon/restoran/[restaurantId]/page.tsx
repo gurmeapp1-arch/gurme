@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
-import { hm, istDate, toDate } from "@/lib/time";
+import { hm, istDate, lastVisibleDate, toDate } from "@/lib/time";
 import { RatingBadge, Stars } from "@/components/Stars";
 import { PageSpinner } from "@/components/RoleGuard";
 import { dayLabel } from "@/components/RestaurantCard";
@@ -50,7 +50,7 @@ function RestoranSayfasi() {
   if (!now || slots === null) return <PageSpinner />;
 
   const upcoming = slots
-    .filter((s) => toDate(s.slot_date, s.end_time) >= now)
+    .filter((s) => toDate(s.slot_date, s.end_time) >= now && s.slot_date <= lastVisibleDate(now))
     .sort(
       (a, b) =>
         toDate(a.slot_date, a.start_time).getTime() - toDate(b.slot_date, b.start_time).getTime()
