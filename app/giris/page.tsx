@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
+import { roleHome } from "@/lib/roles";
 
 export default function GirisPage() {
   const router = useRouter();
+  const { profile } = useAuth();
+
+  // Zaten giriş yapmış kişi giriş sayfasında kalmasın, kendi ana sayfasına gitsin
+  useEffect(() => {
+    if (profile) router.replace(roleHome(profile.role));
+  }, [profile, router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

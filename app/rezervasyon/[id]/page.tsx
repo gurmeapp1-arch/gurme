@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
+import { useNow } from "@/lib/useNow";
+import { isValidPhone } from "@/lib/roles";
 
 type PublicSlot = {
   id: string;
@@ -25,6 +27,7 @@ function RezervasyonForm() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user, profile, loading } = useAuth();
+  const now = useNow();
 
   const [slot, setSlot] = useState<PublicSlot | null | undefined>(undefined);
   const [party, setParty] = useState(2);
@@ -49,7 +52,7 @@ function RezervasyonForm() {
     }
   }, [profile]);
 
-  if (slot === undefined || loading) return <p>Yükleniyor...</p>;
+  if (slot === undefined || loading || !now) return <p>Yükleniyor...</p>;
   if (slot === null) return <p>Bu slot bulunamadı.</p>;
 
   if (!user)
@@ -66,13 +69,16 @@ function RezervasyonForm() {
   if (profile && profile.role !== "diner")
     return <p>Rezervasyon sadece müşteri hesaplarıyla yapılabilir.</p>;
 
-  const ended = toDate(slot.slot_date, slot.end_time) < new Date();
+  const ended = toDate(slot.slot_date, slot.end_time) < now;
   const maxParty = Math.max(1, Math.min(10, slot.remaining));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!slot) return;
     setError("");
+    if (!name.trim()) return setError("Rezervasyon adını yazmalısın.");
+    if (!isValidPhone(phone))
+      return setError("Geçerli bir telefon numarası yaz (örn. 0532 123 45 67).");
     setBusy(true);
     const { error: err } = await supabase.rpc("book_reservation", {
       p_slot_id: slot.id,

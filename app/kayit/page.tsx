@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
+import { isValidPhone, roleHome } from "@/lib/roles";
 
 const DISTRICTS = ["Hisarüstü", "Beşiktaş", "Kadıköy", "Diğer"];
 
@@ -16,6 +18,13 @@ function translateError(msg: string) {
 
 export default function KayitPage() {
   const router = useRouter();
+  const { profile } = useAuth();
+
+  // Zaten giriş yapmış kişi kayıt sayfasında kalmasın
+  useEffect(() => {
+    if (profile) router.replace(roleHome(profile.role));
+  }, [profile, router]);
+
   const [role, setRole] = useState<"diner" | "restaurant">("diner");
   const [form, setForm] = useState({
     full_name: "",
@@ -41,6 +50,8 @@ export default function KayitPage() {
 
     if (!kvkk) return setError("Devam etmek için aydınlatma metnini onaylamalısın.");
     if (form.password.length < 6) return setError("Şifre en az 6 karakter olmalı.");
+    if (!isValidPhone(form.phone))
+      return setError("Geçerli bir telefon numarası yaz (örn. 0532 123 45 67).");
     if (role === "restaurant" && !form.restaurant_name.trim())
       return setError("Restoran adını yazmalısın.");
 

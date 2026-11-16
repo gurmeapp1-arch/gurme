@@ -18,10 +18,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className={`${inter.className} min-h-screen`}>
+      <body className={`${inter.className} flex min-h-screen flex-col`}>
         <AuthProvider>
           <Header />
-          <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+          <footer className="px-4 py-6 text-center text-xs text-gray-500">
+            Gurme · Okul projesi kapsamında yürütülen pilot çalışma
+          </footer>
         </AuthProvider>
       </body>
     </html>

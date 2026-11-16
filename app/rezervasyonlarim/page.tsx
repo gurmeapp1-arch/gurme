@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
+import { useNow } from "@/lib/useNow";
 
 type Status = "confirmed" | "cancelled" | "attended" | "no_show";
 type Row = {
@@ -44,6 +45,7 @@ const fmtDate = (d: string) =>
 
 export default function RezervasyonlarimPage() {
   const { user, loading } = useAuth();
+  const now = useNow();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [msg, setMsg] = useState("");
 
@@ -80,9 +82,8 @@ export default function RezervasyonlarimPage() {
         <Link href="/giris" className="underline">giriş yap</Link>.
       </p>
     );
-  if (rows === null) return <p>Yükleniyor...</p>;
+  if (rows === null || !now) return <p>Yükleniyor...</p>;
 
-  const now = new Date();
   const upcoming = rows
     .filter((r) => r.status === "confirmed" && toDate(r.slot.slot_date, r.slot.end_time) >= now)
     .sort(
@@ -95,7 +96,7 @@ export default function RezervasyonlarimPage() {
   const renderRow = (r: Row) => {
     const start = toDate(r.slot.slot_date, r.slot.start_time);
     const canCancel =
-      r.status === "confirmed" && Date.now() <= start.getTime() - 2 * 3600 * 1000;
+      r.status === "confirmed" && now.getTime() <= start.getTime() - 2 * 3600 * 1000;
     const tooLate =
       r.status === "confirmed" &&
       !canCancel &&
