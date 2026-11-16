@@ -7,19 +7,34 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { roleHome } from "@/lib/roles";
 
+// Giriş sonrası dönülecek sayfa (?next=/rezervasyon/...). Sadece site içi yollar kabul edilir.
+function safeNext(): string | null {
+  try {
+    const n = new URLSearchParams(window.location.search).get("next");
+    return n && n.startsWith("/") && !n.startsWith("//") ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function GirisPage() {
   const router = useRouter();
   const { profile } = useAuth();
 
   // Zaten giriş yapmış kişi giriş sayfasında kalmasın, kendi ana sayfasına gitsin
   useEffect(() => {
-    if (profile) router.replace(roleHome(profile.role));
+    if (profile) router.replace(profile.role === "diner" ? safeNext() ?? "/" : roleHome(profile.role));
   }, [profile, router]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [nextQuery, setNextQuery] = useState("");
+  useEffect(() => {
+    const n = safeNext();
+    setNextQuery(n ? `?next=${encodeURIComponent(n)}` : "");
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +55,7 @@ export default function GirisPage() {
       return;
     }
 
-    router.push("/");
+    router.push(safeNext() ?? "/");
     router.refresh();
   }
 
@@ -74,7 +89,7 @@ export default function GirisPage() {
 
       <p className="mt-4 text-center text-sm">
         Hesabın yok mu?{" "}
-        <Link href="/kayit" className="font-semibold underline">Kayıt ol</Link>
+        <Link href={`/kayit${nextQuery}`} className="font-semibold underline">Kayıt ol</Link>
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import GuestOffers from "@/components/GuestOffers";
 
 const STEPS = [
   {
@@ -71,6 +72,8 @@ export default function Landing() {
           <span className="chip">Kadıköy</span>
         </div>
       </section>
+
+      <GuestOffers />
 
       {/* Nasıl çalışır */}
       <section>

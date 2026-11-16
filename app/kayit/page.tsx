@@ -23,7 +23,15 @@ export default function KayitPage() {
 
   // Zaten giriş yapmış kişi kayıt sayfasında kalmasın
   useEffect(() => {
-    if (profile) router.replace(roleHome(profile.role));
+    if (!profile) return;
+    let next: string | null = null;
+    try {
+      const n = new URLSearchParams(window.location.search).get("next");
+      if (n && n.startsWith("/") && !n.startsWith("//")) next = n;
+    } catch {
+      /* sessiz geç */
+    }
+    router.replace(profile.role === "diner" ? next ?? "/" : roleHome(profile.role));
   }, [profile, router]);
 
   const [role, setRole] = useState<"diner" | "restaurant">("diner");
@@ -84,7 +92,14 @@ export default function KayitPage() {
     const src = readSource();
     if (src && role === "diner") await supabase.rpc("set_signup_source", { p_source: src });
 
-    router.push(role === "restaurant" ? "/restoran" : "/");
+    let next: string | null = null;
+    try {
+      const n = new URLSearchParams(window.location.search).get("next");
+      if (n && n.startsWith("/") && !n.startsWith("//")) next = n;
+    } catch {
+      /* sessiz geç */
+    }
+    router.push(role === "restaurant" ? "/restoran" : next ?? "/");
     router.refresh();
   }
 
