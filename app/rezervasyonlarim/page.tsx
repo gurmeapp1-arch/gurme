@@ -77,8 +77,18 @@ export default function RezervasyonlarimPage() {
     setReviewed(map);
   }, [user]);
 
+  // Restoran "Geldi" işaretleyince yorum kutusu görünsün diye sayfa kendini yeniler
   useEffect(() => {
     load();
+    const t = setInterval(load, 30000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [load]);
 
   async function cancel(id: string) {
