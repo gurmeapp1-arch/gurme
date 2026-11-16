@@ -6,6 +6,7 @@ import { removeImageByUrl } from "@/lib/image";
 import { isValidPhone } from "@/lib/roles";
 import type { Restaurant } from "@/lib/types";
 import ImageUpload from "@/components/ImageUpload";
+import { CATEGORIES } from "@/lib/categories";
 
 export default function ProfileEditor({
   restaurant,
@@ -17,6 +18,7 @@ export default function ProfileEditor({
   const [description, setDescription] = useState(restaurant.description ?? "");
   const [phone, setPhone] = useState(restaurant.phone ?? "");
   const [address, setAddress] = useState(restaurant.address ?? "");
+  const [category, setCategory] = useState(restaurant.category ?? "Restoran");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -45,6 +47,7 @@ export default function ProfileEditor({
         description: description.trim() || null,
         phone: phone.trim() || null,
         address: address.trim() || null,
+        category,
       })
       .eq("id", restaurant.id);
     setBusy(false);
@@ -86,6 +89,16 @@ export default function ProfileEditor({
       </div>
 
       <form onSubmit={saveText} className="space-y-4">
+        <div>
+          <label className="label">Tür</label>
+          <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="label">Tanıtım yazısı</label>
           <textarea

@@ -13,6 +13,7 @@ function navFor(role: string | undefined): NavItem[] {
     return [
       { href: "/", label: "Masalar" },
       { href: "/rezervasyonlarim", label: "Rezervasyonlarım" },
+      { href: "/profil", label: "Profilim" },
     ];
   if (role === "restaurant") return [{ href: "/restoran", label: "Panelim" }];
   if (role === "admin") return [{ href: "/admin", label: "Yönetim" }];

@@ -1,6 +1,7 @@
 "use client";
 
 import { readSource } from "@/lib/source";
+import { CATEGORIES } from "@/lib/categories";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -41,6 +42,7 @@ export default function KayitPage() {
     password: "",
     phone: "",
     restaurant_name: "",
+    category: "Restoran",
     district: "Hisarüstü",
     address: "",
   });
@@ -62,7 +64,7 @@ export default function KayitPage() {
     if (!isValidPhone(form.phone))
       return setError("Geçerli bir telefon numarası yaz (örn. 0532 123 45 67).");
     if (role === "restaurant" && !form.restaurant_name.trim())
-      return setError("Restoran adını yazmalısın.");
+      return setError("İşletme adını yazmalısın.");
 
     setBusy(true);
     const { data, error } = await supabase.auth.signUp({
@@ -74,6 +76,7 @@ export default function KayitPage() {
           full_name: form.full_name.trim(),
           phone: form.phone.trim(),
           restaurant_name: form.restaurant_name.trim(),
+          category: form.category,
           district: form.district,
           address: form.address.trim(),
         },
@@ -86,6 +89,14 @@ export default function KayitPage() {
     if (!data.session) {
       setInfo("Kayıt alındı. E-postana gelen onay bağlantısına tıkla, sonra giriş yap.");
       return;
+    }
+
+    // Restoran türünü kaydet (kayıt tetikleyicisi türü bilmez; yanlış giderse panelden değiştirilebilir)
+    if (role === "restaurant" && data.user) {
+      await supabase
+        .from("restaurants")
+        .update({ category: form.category })
+        .eq("owner_id", data.user.id);
     }
 
     // Hangi bağlantıdan geldiğini kaydet (SQL yaması çalışmadıysa sessizce geçilir)
@@ -113,14 +124,14 @@ export default function KayitPage() {
           onClick={() => setRole("diner")}
           className={`btn ${role === "diner" ? "" : "opacity-50"}`}
         >
-          Yemek yiyeceğim
+          Müşteriyim
         </button>
         <button
           type="button"
           onClick={() => setRole("restaurant")}
           className={`btn ${role === "restaurant" ? "" : "opacity-50"}`}
         >
-          Restoranım var
+          İşletmem var
         </button>
       </div>
 
@@ -149,9 +160,18 @@ export default function KayitPage() {
         {role === "restaurant" && (
           <>
             <div>
-              <label className="label">Restoran adı</label>
+              <label className="label">İşletme adı</label>
               <input className="input" value={form.restaurant_name}
                 onChange={(e) => set("restaurant_name", e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Tür</label>
+              <select className="input" value={form.category}
+                onChange={(e) => set("category", e.target.value)}>
+                {CATEGORIES.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="label">Semt</label>
@@ -168,7 +188,7 @@ export default function KayitPage() {
                 onChange={(e) => set("address", e.target.value)} />
             </div>
             <p className="rounded-lg bg-[#f7f3e8] p-3 text-sm">
-              Restoran kaydın, yönetici onayından sonra yayına girer.
+              İşletme kaydın, yönetici onayından sonra yayına girer.
             </p>
           </>
         )}

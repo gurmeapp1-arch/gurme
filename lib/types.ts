@@ -10,6 +10,7 @@ export type Restaurant = {
   description: string | null;
   cover_url: string | null;
   logo_url: string | null;
+  category: string;
 };
 
 export type Slot = {

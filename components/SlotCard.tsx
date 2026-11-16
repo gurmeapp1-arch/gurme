@@ -20,6 +20,7 @@ export type PublicSlot = {
   logo_url: string | null;
   avg_rating: number | null;
   review_count: number | null;
+  category?: string | null;
 };
 
 // Masa kartı: hem giriş yapmış müşteri listesinde hem karşılama sayfasında kullanılır

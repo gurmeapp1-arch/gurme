@@ -31,6 +31,7 @@ export default function Discover() {
   const [query, setQuery] = useState("");
   const [day, setDay] = useState("all");
   const [part, setPart] = useState("all");
+  const [category, setCategory] = useState("all");
 
   useEffect(() => {
     // Dünden itibaren olan slotları çek (saat dilimi farkı payı), listeyi sonra süzeriz
@@ -67,7 +68,9 @@ export default function Discover() {
         .sort()
         .slice(0, 8)
     : [];
+  if (category !== "all") list = list.filter((s) => s.category === category);
   if (day !== "all") list = list.filter((s) => s.slot_date === day);
+  const categoryOptions = [...new Set(slots.map((s) => s.category).filter(Boolean))] as string[];
   const win = PARTS.find((p) => p.id === part);
   if (win) list = list.filter((s) => hourOf(s.start_time) < win.to && hourOf(s.end_time) > win.from);
 
@@ -106,6 +109,24 @@ export default function Discover() {
           ))}
         </select>
       </div>
+
+      {categoryOptions.length > 1 && (
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+          {["all", ...categoryOptions].map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ${
+                c === category
+                  ? "bg-gray-900 text-white ring-gray-900"
+                  : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              {c === "all" ? "Hepsi" : c}
+            </button>
+          ))}
+        </div>
+      )}
 
       {now && dayOptions.length > 0 && (
         <div className="space-y-2">

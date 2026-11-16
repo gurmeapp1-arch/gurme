@@ -11,6 +11,7 @@ export type RestaurantGroup = {
   cover_url: string | null;
   avg_rating: number | null;
   review_count: number | null;
+  category: string | null;
   slots: PublicSlot[]; // saate göre sıralı
 };
 
@@ -27,6 +28,7 @@ export function groupByRestaurant(slots: PublicSlot[]): RestaurantGroup[] {
         cover_url: s.cover_url,
         avg_rating: s.avg_rating,
         review_count: s.review_count,
+        category: s.category ?? null,
         slots: [],
       };
       map.set(s.restaurant_id, g);
@@ -84,7 +86,10 @@ export default function RestaurantCard({
           <h3 className="text-lg font-bold leading-tight">{g.name}</h3>
           <RatingBadge avg={g.avg_rating} count={g.review_count} />
         </div>
-        <p className="mt-0.5 text-sm text-gray-500">{g.district}</p>
+        <p className="mt-0.5 text-sm text-gray-500">
+          {g.category ? `${g.category} · ` : ""}
+          {g.district}
+        </p>
         <p className="mt-3 text-sm text-gray-700">
           Sıradaki boş saat:{" "}
           <span className="font-semibold">
