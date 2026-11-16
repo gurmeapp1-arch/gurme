@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import GuestOffers from "@/components/GuestOffers";
+import Faq from "@/components/Faq";
 
 const STEPS = [
   { n: "1", title: "Bir masa seç", text: "Hangi gün, hangi saat, ne kadar indirim: hepsi kartta yazıyor." },
@@ -56,6 +57,8 @@ export default function Landing() {
           Siteye para ödemiyorsun. İndirimi restoran, hesap gelince kendisi uyguluyor.
         </p>
       </section>
+
+      <Faq />
     </div>
   );
 }
