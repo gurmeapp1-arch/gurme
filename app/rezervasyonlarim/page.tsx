@@ -158,20 +158,6 @@ export default function RezervasyonlarimPage() {
           </div>
         )}
 
-        {r.status === "confirmed" && waNumber && (
-          <a
-            href={whatsAppLink(
-              waNumber,
-              `Merhaba, Gurme üzerinden ${r.code} kodlu rezervasyon yaptım. ${r.reservation_name} adına, ${r.party_size} kişi, ${fmtDate(r.slot.slot_date)} ${hm(r.slot.start_time)}-${hm(r.slot.end_time)} saatleri arasında geleceğiz.`
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-sm font-semibold text-[#14664a] underline"
-          >
-            Restorana WhatsApp&apos;tan haber ver
-          </a>
-        )}
-
         {r.status === "attended" &&
           (reviewed[r.id] ? (
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -185,10 +171,30 @@ export default function RezervasyonlarimPage() {
             />
           ))}
 
-        {canCancel && (
-          <button onClick={() => cancel(r.id)} className="text-sm text-red-700 underline">
-            Rezervasyonu iptal et
-          </button>
+        {(canCancel || (r.status === "confirmed" && waNumber)) && (
+          <div className="flex flex-wrap gap-3 pt-1">
+            {r.status === "confirmed" && waNumber && (
+              <a
+                href={whatsAppLink(
+                  waNumber,
+                  `Merhaba, Gurme üzerinden ${r.code} kodlu rezervasyon yaptım. ${r.reservation_name} adına, ${r.party_size} kişi, ${fmtDate(r.slot.slot_date)} ${hm(r.slot.start_time)}-${hm(r.slot.end_time)} saatleri arasında geleceğiz.`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full px-4 py-2 text-sm font-semibold text-[#14664a] ring-1 ring-[#14664a] hover:bg-[#14664a] hover:text-white"
+              >
+                WhatsApp&apos;tan haber ver
+              </a>
+            )}
+            {canCancel && (
+              <button
+                onClick={() => cancel(r.id)}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-red-700 ring-1 ring-red-300 hover:bg-red-50"
+              >
+                Rezervasyonu iptal et
+              </button>
+            )}
+          </div>
         )}
         {tooLate && (
           <p className="text-sm text-gray-600">

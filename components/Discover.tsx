@@ -86,10 +86,8 @@ export default function Discover() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-4xl font-extrabold text-[#0a4430]">İndirimli masalar</h1>
-        <p className="mt-1 text-gray-600">
-          Restoranların sakin saatlerinde açtığı indirimli masaları seç, rezervasyonunu yap.
-        </p>
+        <h1 className="text-3xl font-extrabold text-[#0a4430]">İndirimli masalar</h1>
+        <p className="mt-1 text-gray-600">Bir masa seç, rezervasyonunu yap.</p>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -146,13 +144,16 @@ export default function Discover() {
       )}
 
       {ready && (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           {list.map((s) => {
             const started = toDate(s.slot_date, s.start_time) <= now!;
-            const full = Math.round(((s.capacity - s.remaining) / s.capacity) * 100);
             return (
-              <div key={s.id} className="card card-hover flex flex-col gap-3" style={{ padding: 12 }}>
-                <div className="ticket-tile relative h-40 overflow-hidden">
+              <Link
+                key={s.id}
+                href={`/rezervasyon/${s.id}`}
+                className="group overflow-hidden rounded-2xl bg-white ring-1 ring-gray-200 transition hover:shadow-md"
+              >
+                <div className="relative h-40 bg-[#0a4430]">
                   {s.cover_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -162,56 +163,37 @@ export default function Discover() {
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (
-                    <span className="text-6xl">🍽️</span>
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src="/img/pasta.webp"
+                      alt=""
+                      className="absolute inset-0 m-auto h-24 w-auto opacity-90"
+                    />
                   )}
-                  <div className="discount absolute right-3 top-3">
-                    %{s.discount_percent}
-                    <small>İNDİRİM</small>
-                  </div>
+                  <span className="absolute left-3 top-3 rounded-full bg-[#ebb035] px-3 py-1 text-sm font-extrabold text-[#0a4430]">
+                    %{s.discount_percent} indirim
+                  </span>
                   {started && (
-                    <span className="pill pill-live absolute left-3 top-3">Şu an açık</span>
+                    <span className="absolute right-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#14664a]">
+                      Şu an açık
+                    </span>
                   )}
                 </div>
 
-                <div className="px-1">
-                  <div className="flex items-center gap-2">
-                    {s.logo_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={s.logo_url}
-                        alt=""
-                        loading="lazy"
-                        className="h-9 w-9 shrink-0 rounded-full object-cover"
-                      />
-                    )}
-                    <h2 className="font-display text-2xl font-bold leading-tight">
+                <div className="p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-lg font-bold leading-tight text-gray-900">
                       {s.restaurant_name}
                     </h2>
-                  </div>
-                  <div className="mt-0.5">
                     <RatingBadge avg={s.avg_rating} count={s.review_count} />
                   </div>
-                  <p className="mt-0.5 text-sm text-gray-600">
-                    {s.district}
-                    {s.address ? ` · ${s.address}` : ""}
-                  </p>
-                  {s.description && <p className="mt-2 text-sm">{s.description}</p>}
-                  <p className="mt-2 font-semibold">
+                  <p className="mt-0.5 text-sm text-gray-500">{s.district}</p>
+                  <p className="mt-3 font-semibold text-gray-900">
                     {dayLabel(s.slot_date, now!)} · {hm(s.start_time)}–{hm(s.end_time)}
                   </p>
+                  <p className="text-sm text-gray-500">{s.remaining} kişilik yer kaldı</p>
                 </div>
-
-                <div className="px-1">
-                  <div className="h-1.5 overflow-hidden rounded-full bg-[#ece8d9]">
-                    <div className="h-full rounded-full bg-[#ebb035]" style={{ width: `${full}%` }} />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-600">Kalan kontenjan: {s.remaining} kişi</p>
-                </div>
-
-                <Link href={`/rezervasyon/${s.id}`} className="btn">
-                  Rezervasyon yap
-                </Link>
-              </div>
+              </Link>
             );
           })}
         </div>
