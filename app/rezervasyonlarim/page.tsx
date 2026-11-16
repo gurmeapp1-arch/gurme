@@ -64,7 +64,9 @@ export default function RezervasyonlarimPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     if (error) setMsg("Liste yüklenemedi: " + error.message);
-    setRows((data ?? []) as unknown as Row[]);
+    // Slotu ya da restoranı silinmiş eski kayıtlar sayfayı bozmasın
+    const all = (data ?? []) as unknown as (Row | { slot: null })[];
+    setRows(all.filter((r): r is Row => !!r.slot && !!(r as Row).slot.restaurant));
 
     // Hangi rezervasyonlara yorum yazılmış?
     const { data: rv } = await supabase
