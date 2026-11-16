@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNow } from "@/lib/useNow";
 import { Stars } from "@/components/Stars";
 import ReviewBox from "@/components/ReviewBox";
+import { buildIcs, downloadIcs } from "@/lib/ics";
 import { toWhatsAppNumber, whatsAppLink } from "@/lib/config";
 
 type Status = "confirmed" | "cancelled" | "attended" | "no_show";
@@ -170,6 +171,31 @@ export default function RezervasyonlarimPage() {
               onDone={load}
             />
           ))}
+
+        {r.status === "confirmed" && toDate(r.slot.slot_date, r.slot.end_time) >= now && (
+          <div className="pt-1">
+            <button
+              onClick={() =>
+                downloadIcs(
+                  `gurme-${r.code}.ics`,
+                  buildIcs({
+                    uid: r.id,
+                    title: `${r.slot.restaurant.name} (Gurme rezervasyonu)`,
+                    start: start,
+                    end: toDate(r.slot.slot_date, r.slot.end_time),
+                    location: [r.slot.restaurant.name, r.slot.restaurant.address]
+                      .filter(Boolean)
+                      .join(", "),
+                    description: `Rezervasyon kodu: ${r.code}. ${r.reservation_name} adına, ${r.party_size} kişi. Hesapta kodu söyle, %${r.slot.discount_percent} indirim uygulansın.`,
+                  })
+                )
+              }
+              className="rounded-full px-4 py-2 text-sm font-semibold text-[#0a4430] ring-1 ring-gray-300 hover:bg-gray-50"
+            >
+              Takvime ekle
+            </button>
+          </div>
+        )}
 
         {(canCancel || (r.status === "confirmed" && waNumber)) && (
           <div className="flex flex-wrap gap-3 pt-1">

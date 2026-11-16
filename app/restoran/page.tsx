@@ -231,6 +231,9 @@ export default function RestoranPage() {
   const monthAttended = monthRes
     .filter((r) => r.status === "attended")
     .reduce((n, r) => n + r.party_size, 0);
+  const today = istDate(now);
+  const todayRes = upcomingRes.filter((r) => slotById.get(r.slot_id)?.slot_date === today);
+  const laterRes = upcomingRes.filter((r) => slotById.get(r.slot_id)?.slot_date !== today);
   const upcomingPeople = upcomingRes.reduce((n, r) => n + r.party_size, 0);
 
   const renderRes = (r: Reservation) => {
@@ -270,6 +273,18 @@ export default function RestoranPage() {
                   className="text-gray-700 underline"
                 >
                   WhatsApp
+                </a>
+                {" · "}
+                <a
+                  href={whatsAppLink(
+                    wa,
+                    `Merhaba ${r.reservation_name}, ${fmtDate(s.slot_date)} ${hm(s.start_time)}-${hm(s.end_time)} arasında ${restaurant.name} için ${r.party_size} kişilik rezervasyonunuz var (kod: ${r.code}). Sizi bekliyoruz!`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#14664a] underline"
+                >
+                  Hatırlat
                 </a>
               </>
             )}
@@ -416,9 +431,25 @@ export default function RestoranPage() {
             </p>
           </div>
 
+          {todayRes.length > 0 && (
+            <section>
+              <h2 className="mb-2 font-bold text-gray-900">
+                Bugün gelecekler ({todayRes.length})
+              </h2>
+              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-2 ring-[#0a4430]">
+                {todayRes.map(renderRes)}
+              </ul>
+              <p className="mt-2 text-xs text-gray-500">
+                &quot;Hatırlat&quot;a basınca WhatsApp hazır bir mesajla açılır, sen sadece gönder.
+              </p>
+            </section>
+          )}
+
           <section>
             <h2 className="mb-2 font-bold text-gray-900">Yaklaşan rezervasyonlar</h2>
-            {upcomingRes.length === 0 ? (
+            {laterRes.length === 0 && todayRes.length > 0 ? (
+              <p className="text-gray-600">Sonraki günler için rezervasyon yok.</p>
+            ) : upcomingRes.length === 0 ? (
               <div className="rounded-xl bg-white p-6 text-center ring-1 ring-gray-200">
                 <p className="text-gray-700">Henüz rezervasyon yok.</p>
                 <button onClick={() => setTab("slot")} className="btn btn-sm mt-3">
@@ -427,7 +458,7 @@ export default function RestoranPage() {
               </div>
             ) : (
               <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
-                {upcomingRes.map(renderRes)}
+                {laterRes.map(renderRes)}
               </ul>
             )}
             <p className="mt-2 text-xs text-gray-500">
