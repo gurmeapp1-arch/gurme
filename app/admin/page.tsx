@@ -14,6 +14,13 @@ type Rest = {
   approved: boolean;
   created_at: string;
 };
+type ReviewRow = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  restaurant: { name: string } | null;
+};
 type Row = {
   id: string;
   code: string;
@@ -62,7 +69,9 @@ export default function AdminPage() {
   const [dinerCount, setDinerCount] = useState(0);
   const [slotCount, setSlotCount] = useState(0);
   const [msg, setMsg] = useState("");
-  const [tab, setTab] = useState<"stats" | "restaurants" | "reservations">("stats");
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [sources, setSources] = useState<Record<string, number>>({});
+  const [tab, setTab] = useState<"stats" | "restaurants" | "reservations" | "reviews">("stats");
 
   const isAdmin = profile?.role === "admin";
 
@@ -88,7 +97,33 @@ export default function AdminPage() {
     setRows((rv.data ?? []) as unknown as Row[]);
     setDinerCount(d.count ?? 0);
     setSlotCount(sl.count ?? 0);
+
+    // Yorumlar ve kayıt kaynakları ayrı yüklenir: SQL yaması eksikse sayfanın geri kalanı bozulmaz
+    const rv2 = await supabase
+      .from("reviews")
+      .select("id, rating, comment, created_at, restaurant:restaurants(name)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setReviews(rv2.error ? [] : ((rv2.data ?? []) as unknown as ReviewRow[]));
+
+    const src = await supabase.from("profiles").select("signup_source").eq("role", "diner");
+    if (!src.error) {
+      const m: Record<string, number> = {};
+      for (const x of (src.data ?? []) as { signup_source: string | null }[]) {
+        const k = x.signup_source || "(belirsiz)";
+        m[k] = (m[k] ?? 0) + 1;
+      }
+      setSources(m);
+    }
   }, []);
+
+  async function deleteReview(id: string) {
+    setMsg("");
+    if (!confirm("Bu yorum silinsin mi?")) return;
+    const { error } = await supabase.rpc("delete_review", { p_id: id });
+    if (error) setMsg(error.message);
+    else load();
+  }
 
   useEffect(() => {
     if (isAdmin) load();
@@ -178,6 +213,7 @@ export default function AdminPage() {
         {tabBtn("stats", "Özet")}
         {tabBtn("restaurants", `Restoranlar${pending ? ` (${pending} onay bekliyor)` : ""}`)}
         {tabBtn("reservations", "Rezervasyonlar")}
+        {tabBtn("reviews", `Yorumlar (${reviews.length})`)}
       </div>
 
       {msg && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{msg}</p>}
@@ -193,6 +229,23 @@ export default function AdminPage() {
             <Stat label="Müşteri sayısı" value={dinerCount} />
             <Stat label="Açılan slot" value={slotCount} />
             <Stat label="Henüz işaretlenmemiş" value={cnt("confirmed")} />
+          </div>
+
+          <div className="card">
+            <h2 className="mb-3 text-xl font-bold">Kayıt kaynağı (müşteriler)</h2>
+            <ul className="divide-y text-sm">
+              {Object.entries(sources)
+                .sort((a, b) => b[1] - a[1])
+                .map(([k, n]) => (
+                  <li key={k} className="flex justify-between py-2">
+                    <span className="font-semibold">{k}</span>
+                    <span>{n} kişi</span>
+                  </li>
+                ))}
+            </ul>
+            <p className="mt-2 text-xs text-gray-500">
+              QR ve gruplarda <code>?kaynak=isim</code> ekli bağlantı kullanırsan burada görünür.
+            </p>
           </div>
 
           <div className="card">
@@ -246,6 +299,26 @@ export default function AdminPage() {
                   </button>
                 )}
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "reviews" && (
+        <div className="space-y-3">
+          {reviews.length === 0 && <p className="text-gray-600">Henüz yorum yok.</p>}
+          {reviews.map((r) => (
+            <div key={r.id} className="card flex flex-wrap items-start justify-between gap-3 text-sm">
+              <div>
+                <p className="font-semibold">
+                  {r.restaurant?.name ?? "Restoran"} · {r.rating}/5
+                </p>
+                <p className="text-gray-700">{r.comment || "(yorum yazılmamış)"}</p>
+                <p className="text-xs text-gray-500">{fmtDay(r.created_at.slice(0, 10))}</p>
+              </div>
+              <button onClick={() => deleteReview(r.id)} className="text-red-700 underline">
+                Sil
+              </button>
             </div>
           ))}
         </div>

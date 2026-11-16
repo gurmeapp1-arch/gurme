@@ -8,6 +8,7 @@ import { PageSpinner } from "@/components/RoleGuard";
 import { Stars } from "@/components/Stars";
 import ProfileEditor from "@/components/restaurant/ProfileEditor";
 import SlotForm from "@/components/restaurant/SlotForm";
+import QrCard from "@/components/restaurant/QrCard";
 import { fmtDate, fmtShort, hm, istDate, toDate } from "@/lib/time";
 import { toWhatsAppNumber, whatsAppLink } from "@/lib/config";
 import type { Reservation, Restaurant, Review, Slot, Status } from "@/lib/types";
@@ -66,7 +67,7 @@ export default function RestoranPage() {
   const [fresh, setFresh] = useState<Reservation[]>([]);
   const [notifPerm, setNotifPerm] = useState("unsupported");
   const seen = useRef<Set<string> | null>(null);
-  const [tab, setTab] = useState<"rez" | "slot" | "profil">("rez");
+  const [tab, setTab] = useState<"rez" | "slot" | "profil" | "qr">("rez");
 
   const loadAll = useCallback(async () => {
     if (!user) return;
@@ -80,7 +81,7 @@ export default function RestoranPage() {
     setRestLoaded(true);
     if (!rest || !rest.approved) return;
 
-    const from = istDate(new Date(Date.now() - 14 * 86400000));
+    const from = istDate(new Date(Date.now() - 45 * 86400000));
     const { data: s } = await supabase
       .from("slots")
       .select("id, slot_date, start_time, end_time, discount_percent, capacity")
@@ -221,6 +222,15 @@ export default function RestoranPage() {
   const pastRes = reservations
     .filter((r) => endOf(r) < now || r.status === "cancelled")
     .sort((a, b) => startOf(b) - startOf(a));
+  // Bu ay (Türkiye saatiyle) gelen müşteriler
+  const monthStart = istDate(now).slice(0, 8) + "01";
+  const monthRes = reservations.filter((r) => {
+    const sl = slotById.get(r.slot_id);
+    return sl && sl.slot_date >= monthStart && r.status !== "cancelled";
+  });
+  const monthAttended = monthRes
+    .filter((r) => r.status === "attended")
+    .reduce((n, r) => n + r.party_size, 0);
   const upcomingPeople = upcomingRes.reduce((n, r) => n + r.party_size, 0);
 
   const renderRes = (r: Reservation) => {
@@ -295,9 +305,10 @@ export default function RestoranPage() {
     );
   };
 
-  const tabs: { id: "rez" | "slot" | "profil"; label: string; badge?: number }[] = [
+  const tabs: { id: "rez" | "slot" | "profil" | "qr"; label: string; badge?: number }[] = [
     { id: "rez", label: "Rezervasyonlar", badge: upcomingRes.length },
     { id: "slot", label: "İndirimlerim" },
+    { id: "qr", label: "Tanıtım kartı" },
     { id: "profil", label: "Profil" },
   ];
 
@@ -395,6 +406,16 @@ export default function RestoranPage() {
             </div>
           </div>
 
+          <div className="rounded-xl bg-[#0a4430] p-4 text-white">
+            <p className="text-sm text-[#cfe8da]">Bu ay Gurme ile</p>
+            <p className="text-2xl font-extrabold">
+              {monthAttended} kişi geldi
+              <span className="ml-2 text-base font-semibold text-[#ebb035]">
+                ({monthRes.length} rezervasyon)
+              </span>
+            </p>
+          </div>
+
           <section>
             <h2 className="mb-2 font-bold text-gray-900">Yaklaşan rezervasyonlar</h2>
             {upcomingRes.length === 0 ? (
@@ -465,6 +486,8 @@ export default function RestoranPage() {
           </section>
         </div>
       )}
+
+      {tab === "qr" && <QrCard restaurantName={restaurant.name} />}
 
       {tab === "profil" && (
         <div className="space-y-8">

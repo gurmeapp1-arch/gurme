@@ -1,5 +1,6 @@
 "use client";
 
+import { readSource } from "@/lib/source";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -78,6 +79,10 @@ export default function KayitPage() {
       setInfo("Kayıt alındı. E-postana gelen onay bağlantısına tıkla, sonra giriş yap.");
       return;
     }
+
+    // Hangi bağlantıdan geldiğini kaydet (SQL yaması çalışmadıysa sessizce geçilir)
+    const src = readSource();
+    if (src && role === "diner") await supabase.rpc("set_signup_source", { p_source: src });
 
     router.push(role === "restaurant" ? "/restoran" : "/");
     router.refresh();
@@ -162,7 +167,10 @@ export default function KayitPage() {
             bilgilerini işler. Bilgilerin yalnızca rezervasyon yaptığın restoranla
             ve Gurme yönetimiyle paylaşılır, üçüncü kişilere satılmaz. Bu bir okul
             projesi kapsamında yürütülen pilot çalışmadır. Verilerinin silinmesi
-            için bize başvurabilirsin.
+            için bize başvurabilirsin.{" "}
+            <Link href="/gizlilik" target="_blank" className="font-semibold underline">
+              Tam metni oku
+            </Link>
           </p>
         </details>
 

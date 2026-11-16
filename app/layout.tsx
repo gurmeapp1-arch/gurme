@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import Header from "@/components/Header";
 import SupportButton from "@/components/SupportButton";
+import SourceCapture from "@/components/SourceCapture";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -31,9 +33,13 @@ export default function RootLayout({
           <Header />
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
           <footer className="px-4 py-6 text-center text-xs text-gray-500">
-            Gurme · Okul projesi kapsamında yürütülen pilot çalışma
+            Gurme · Okul projesi kapsamında yürütülen pilot çalışma ·{" "}
+            <Link href="/gizlilik" className="underline">
+              Gizlilik ve KVKK
+            </Link>
           </footer>
           <SupportButton />
+          <SourceCapture />
         </AuthProvider>
       </body>
     </html>
