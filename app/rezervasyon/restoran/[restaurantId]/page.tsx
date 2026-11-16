@@ -28,6 +28,9 @@ function RestoranSayfasi() {
   const [day, setDay] = useState<string | null>(null);
 
   useEffect(() => {
+    // Listede bir gün filtresi seçiliyse o günle aç (?gun=2026-11-20)
+    const g = new URLSearchParams(window.location.search).get("gun");
+    if (g && /^\d{4}-\d{2}-\d{2}$/.test(g)) setDay(g);
     const from = istDate(new Date(Date.now() - 86400000));
     supabase
       .from("slots_public")

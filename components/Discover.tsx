@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
 import type { PublicSlot } from "@/components/SlotCard";
-import RestaurantCard, { groupByRestaurant } from "@/components/RestaurantCard";
+import RestaurantCard, { dayLabel, groupByRestaurant } from "@/components/RestaurantCard";
+
+// Gün içi zaman dilimleri (saat olarak)
+const PARTS = [
+  { id: "ogle", label: "Öğle 11–15", from: 11, to: 15 },
+  { id: "ikindi", label: "Öğleden sonra 15–18", from: 15, to: 18 },
+  { id: "aksam", label: "Akşam 18 ve sonrası", from: 18, to: 29 },
+];
+const hourOf = (t: string) => Number(t.slice(0, 2)) + Number(t.slice(3, 5)) / 60;
 
 const DISTRICTS = ["Hisarüstü", "Beşiktaş", "Kadıköy", "Diğer"];
 
@@ -21,6 +29,8 @@ export default function Discover() {
   const [error, setError] = useState("");
   const [district, setDistrict] = useState("all");
   const [query, setQuery] = useState("");
+  const [day, setDay] = useState("all");
+  const [part, setPart] = useState("all");
 
   useEffect(() => {
     // Dünden itibaren olan slotları çek (saat dilimi farkı payı), listeyi sonra süzeriz
@@ -45,6 +55,21 @@ export default function Discover() {
     const q = query.trim().toLocaleLowerCase("tr-TR");
     if (q) list = list.filter((s) => s.restaurant_name.toLocaleLowerCase("tr-TR").includes(q));
   }
+  // Gün ve saat filtresi için seçilebilecek günler (arama/semt filtresinden bağımsız)
+  const dayOptions = now
+    ? [
+        ...new Set(
+          slots
+            .filter((s) => s.remaining > 0 && toDate(s.slot_date, s.end_time) >= now)
+            .map((s) => s.slot_date)
+        ),
+      ]
+        .sort()
+        .slice(0, 8)
+    : [];
+  if (day !== "all") list = list.filter((s) => s.slot_date === day);
+  const win = PARTS.find((p) => p.id === part);
+  if (win) list = list.filter((s) => hourOf(s.start_time) < win.to && hourOf(s.end_time) > win.from);
 
   const ready = loaded && !!now;
 
@@ -82,6 +107,41 @@ export default function Discover() {
         </select>
       </div>
 
+      {now && dayOptions.length > 0 && (
+        <div className="space-y-2">
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+            {["all", ...dayOptions].map((d) => (
+              <button
+                key={d}
+                onClick={() => setDay(d)}
+                className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold ring-1 ${
+                  d === day
+                    ? "bg-[#0a4430] text-white ring-[#0a4430]"
+                    : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {d === "all" ? "Tüm günler" : dayLabel(d, now)}
+              </button>
+            ))}
+          </div>
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+            {[{ id: "all", label: "Her saat" }, ...PARTS].map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPart(p.id)}
+                className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold ring-1 ${
+                  p.id === part
+                    ? "bg-[#14664a] text-white ring-[#14664a]"
+                    : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {!ready && !error && (
@@ -103,7 +163,12 @@ export default function Discover() {
       {ready && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {restaurants.map((g) => (
-            <RestaurantCard key={g.id} group={g} now={now!} href={`/rezervasyon/restoran/${g.id}`} />
+            <RestaurantCard
+              key={g.id}
+              group={g}
+              now={now!}
+              href={`/rezervasyon/restoran/${g.id}${day !== "all" ? `?gun=${day}` : ""}`}
+            />
           ))}
         </div>
       )}
