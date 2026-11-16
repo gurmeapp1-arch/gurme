@@ -5,6 +5,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { useNow } from "@/lib/useNow";
+import { Stars } from "@/components/Stars";
+import ReviewBox from "@/components/ReviewBox";
+import { toWhatsAppNumber, whatsAppLink } from "@/lib/config";
 
 type Status = "confirmed" | "cancelled" | "attended" | "no_show";
 type Row = {
@@ -47,6 +50,7 @@ export default function RezervasyonlarimPage() {
   const { user, loading } = useAuth();
   const now = useNow();
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [reviewed, setReviewed] = useState<Record<string, number>>({});
   const [msg, setMsg] = useState("");
 
   const load = useCallback(async () => {
@@ -60,6 +64,17 @@ export default function RezervasyonlarimPage() {
       .order("created_at", { ascending: false });
     if (error) setMsg("Liste yüklenemedi: " + error.message);
     setRows((data ?? []) as unknown as Row[]);
+
+    // Hangi rezervasyonlara yorum yazılmış?
+    const { data: rv } = await supabase
+      .from("reviews")
+      .select("reservation_id, rating")
+      .eq("user_id", user.id);
+    const map: Record<string, number> = {};
+    for (const x of (rv ?? []) as { reservation_id: string; rating: number }[]) {
+      map[x.reservation_id] = x.rating;
+    }
+    setReviewed(map);
   }, [user]);
 
   useEffect(() => {
@@ -95,6 +110,7 @@ export default function RezervasyonlarimPage() {
 
   const renderRow = (r: Row) => {
     const start = toDate(r.slot.slot_date, r.slot.start_time);
+    const waNumber = toWhatsAppNumber(r.slot.restaurant.phone);
     const canCancel =
       r.status === "confirmed" && now.getTime() <= start.getTime() - 2 * 3600 * 1000;
     const tooLate =
@@ -132,6 +148,33 @@ export default function RezervasyonlarimPage() {
           </div>
         )}
 
+        {r.status === "confirmed" && waNumber && (
+          <a
+            href={whatsAppLink(
+              waNumber,
+              `Merhaba, Gurme üzerinden ${r.code} kodlu rezervasyon yaptım. ${r.reservation_name} adına, ${r.party_size} kişi, ${fmtDate(r.slot.slot_date)} ${hm(r.slot.start_time)}-${hm(r.slot.end_time)} saatleri arasında geleceğiz.`
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-sm font-semibold text-[#14664a] underline"
+          >
+            Restorana WhatsApp&apos;tan haber ver
+          </a>
+        )}
+
+        {r.status === "attended" &&
+          (reviewed[r.id] ? (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              Yorumun: <Stars value={reviewed[r.id]} /> Teşekkürler!
+            </div>
+          ) : (
+            <ReviewBox
+              reservationId={r.id}
+              restaurantName={r.slot.restaurant.name}
+              onDone={load}
+            />
+          ))}
+
         {canCancel && (
           <button onClick={() => cancel(r.id)} className="text-sm text-red-700 underline">
             Rezervasyonu iptal et
@@ -156,7 +199,7 @@ export default function RezervasyonlarimPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold text-[#0a4430]">Rezervasyonlarım</h1>
+      <h1 className="font-display text-4xl font-extrabold text-[#0a4430]">Rezervasyonlarım</h1>
 
       {msg && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{msg}</p>}
 

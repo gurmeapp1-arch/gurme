@@ -46,7 +46,7 @@ export default function GirisPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-6 text-3xl font-extrabold text-[#0a4430]">Giriş yap</h1>
+      <h1 className="font-display mb-6 text-4xl font-extrabold text-[#0a4430]">Giriş yap</h1>
 
       <form onSubmit={submit} className="card space-y-4">
         <div>
@@ -58,9 +58,14 @@ export default function GirisPage() {
           <label className="label">Şifre</label>
           <input className="input" type="password" required value={password}
             onChange={(e) => setPassword(e.target.value)} />
+          <p className="mt-1 text-right text-sm">
+            <Link href="/sifremi-unuttum" className="font-semibold underline">
+              Şifremi unuttum
+            </Link>
+          </p>
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {error &&<p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
         <button className="btn w-full" disabled={busy}>
           {busy ? "Giriş yapılıyor..." : "Giriş yap"}

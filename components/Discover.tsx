@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
+import { RatingBadge } from "@/components/Stars";
 
 type PublicSlot = {
   id: string;
@@ -17,6 +18,10 @@ type PublicSlot = {
   discount_percent: number;
   capacity: number;
   remaining: number;
+  cover_url: string | null;
+  logo_url: string | null;
+  avg_rating: number | null;
+  review_count: number | null;
 };
 
 const DISTRICTS = ["Hisarüstü", "Beşiktaş", "Kadıköy", "Diğer"];
@@ -147,8 +152,18 @@ export default function Discover() {
             const full = Math.round(((s.capacity - s.remaining) / s.capacity) * 100);
             return (
               <div key={s.id} className="card card-hover flex flex-col gap-3" style={{ padding: 12 }}>
-                <div className="ticket-tile relative h-28">
-                  <span className="text-6xl">🍽️</span>
+                <div className="ticket-tile relative h-40 overflow-hidden">
+                  {s.cover_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s.cover_url}
+                      alt={s.restaurant_name}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-6xl">🍽️</span>
+                  )}
                   <div className="discount absolute right-3 top-3">
                     %{s.discount_percent}
                     <small>İNDİRİM</small>
@@ -159,9 +174,23 @@ export default function Discover() {
                 </div>
 
                 <div className="px-1">
-                  <h2 className="font-display text-2xl font-bold leading-tight">
-                    {s.restaurant_name}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    {s.logo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={s.logo_url}
+                        alt=""
+                        loading="lazy"
+                        className="h-9 w-9 shrink-0 rounded-full object-cover"
+                      />
+                    )}
+                    <h2 className="font-display text-2xl font-bold leading-tight">
+                      {s.restaurant_name}
+                    </h2>
+                  </div>
+                  <div className="mt-0.5">
+                    <RatingBadge avg={s.avg_rating} count={s.review_count} />
+                  </div>
                   <p className="mt-0.5 text-sm text-gray-600">
                     {s.district}
                     {s.address ? ` · ${s.address}` : ""}

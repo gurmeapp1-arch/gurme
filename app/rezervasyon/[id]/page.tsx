@@ -7,9 +7,24 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { useNow } from "@/lib/useNow";
 import { isValidPhone } from "@/lib/roles";
+import { RatingBadge, Stars } from "@/components/Stars";
+
+type ReviewRow = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reviewer_name: string;
+};
 
 type PublicSlot = {
   id: string;
+  restaurant_id: string;
+  description: string | null;
+  cover_url: string | null;
+  logo_url: string | null;
+  avg_rating: number | null;
+  review_count: number | null;
   restaurant_name: string;
   district: string;
   address: string | null;
@@ -44,6 +59,19 @@ function RezervasyonForm() {
       .maybeSingle()
       .then(({ data }) => setSlot((data as PublicSlot) ?? null));
   }, [id]);
+
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const restaurantId = slot?.restaurant_id;
+  useEffect(() => {
+    if (!restaurantId) return;
+    supabase
+      .from("reviews_public")
+      .select("id, rating, comment, created_at, reviewer_name")
+      .eq("restaurant_id", restaurantId)
+      .order("created_at", { ascending: false })
+      .limit(5)
+      .then(({ data }) => setReviews((data ?? []) as ReviewRow[]));
+  }, [restaurantId]);
 
   useEffect(() => {
     if (profile) {
@@ -100,12 +128,29 @@ function RezervasyonForm() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <div className="card">
-        <h1 className="text-2xl font-extrabold text-[#0a4430]">{slot.restaurant_name}</h1>
-        <p className="text-sm text-gray-600">
+      <div className="card overflow-hidden" style={{ padding: 0 }}>
+        {slot.cover_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={slot.cover_url} alt={slot.restaurant_name} className="h-44 w-full object-cover" />
+        )}
+        <div className="p-5">
+        <div className="flex items-center gap-3">
+          {slot.logo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={slot.logo_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+          )}
+          <h1 className="font-display text-3xl font-extrabold leading-tight text-[#0a4430]">
+            {slot.restaurant_name}
+          </h1>
+        </div>
+        <div className="mt-1">
+          <RatingBadge avg={slot.avg_rating} count={slot.review_count} />
+        </div>
+        <p className="mt-1 text-sm text-gray-600">
           {slot.district}
           {slot.address ? ` · ${slot.address}` : ""}
         </p>
+        {slot.description && <p className="mt-2 text-sm">{slot.description}</p>}
         <p className="mt-3 font-semibold">
           {dateText} · {hm(slot.start_time)}–{hm(slot.end_time)}
         </p>
@@ -118,6 +163,7 @@ function RezervasyonForm() {
           Bu saatler içinde istediğin zaman gelebilirsin. İndirim, ödeme sırasında
           restoranda kodunla uygulanır.
         </p>
+        </div>
       </div>
 
       {ended || slot.remaining <= 0 ? (
@@ -155,6 +201,21 @@ function RezervasyonForm() {
             Rezervasyona 2 saat kalana kadar ücretsiz iptal edebilirsin.
           </p>
         </form>
+      )}
+
+      {reviews.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="font-display text-2xl font-bold text-[#0a4430]">Müşteri yorumları</h2>
+          {reviews.map((r) => (
+            <div key={r.id} className="card">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold">{r.reviewer_name}</span>
+                <Stars value={r.rating} />
+              </div>
+              {r.comment && <p className="mt-1 text-sm">{r.comment}</p>}
+            </div>
+          ))}
+        </section>
       )}
     </div>
   );

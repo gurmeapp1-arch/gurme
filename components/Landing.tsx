@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 // Süs amaçlı örnek teklifler. Gerçek restoran adı kullanılmıyor, sayfada "örnek görünüm" notu var.
@@ -54,10 +55,49 @@ function Cta({
   );
 }
 
+const PROBLEMS = [
+  {
+    img: "/img/sorun-1.webp",
+    w: 360,
+    h: 375,
+    text: "Restoranlar sakin saatlerde masaları boş bırakıyor.",
+  },
+  {
+    img: "/img/sorun-2.webp",
+    w: 360,
+    h: 375,
+    text: "Boş kapasite, sonradan geri alınamayan gelir demek.",
+  },
+  {
+    img: "/img/sorun-3.webp",
+    w: 360,
+    h: 375,
+    text: "Öğrenciler ve freelancerlar için dışarıda yemek pahalı.",
+  },
+];
+
 const STEPS = [
-  { n: "1", emoji: "🔎", title: "Bul ve rezerve et", text: "Sakin saatlerde açılan indirimli masaları gör, sana uyanı seç." },
-  { n: "2", emoji: "🍽️", title: "Restoranda ye", text: "Seçtiğin saat aralığında git. Rezervasyon adın ve kodun hazır." },
-  { n: "3", emoji: "🎟️", title: "Kodunla indirim", text: "Hesabı öderken kodunu göster, indirim kasada uygulanır." },
+  {
+    img: "/img/adim-1.webp",
+    w: 360,
+    h: 300,
+    title: "Bul ve rezerve et",
+    text: "Sakin saatlerde açılan indirimli masaları gör, sana uyanı seç.",
+  },
+  {
+    img: "/img/adim-2.webp",
+    w: 360,
+    h: 356,
+    title: "Restoranda ye",
+    text: "Seçtiğin saat aralığında git. Rezervasyon adın ve kodun hazır.",
+  },
+  {
+    img: "/img/adim-3.webp",
+    w: 360,
+    h: 379,
+    title: "Kodunla indirim",
+    text: "Hesabı öderken kodunu göster, indirim kasada uygulanır.",
+  },
 ];
 
 // Giriş yapmamış ziyaretçinin gördüğü sayfa: restoran listesi yok, sadece tanıtım
@@ -75,25 +115,31 @@ export default function Landing() {
           Restoranların boş masa saatlerini, indirimli ve rahat bir sofraya çeviriyoruz.
         </p>
 
-        {/* Büyük ekran: yüzen kartlar + ortada çağrı */}
-        <div className="relative mx-auto mt-6 hidden h-[430px] max-w-6xl lg:block">
+        {/* Büyük ekran: yüzen kartlar + ortada logo ve çağrı */}
+        <div className="relative mx-auto mt-6 hidden h-[500px] max-w-6xl lg:block">
           {SAMPLES.map((s, i) => (
             <div key={s.title} className="float-card" style={FLOAT_POS[i]}>
               <MiniOffer s={s} />
             </div>
           ))}
           <div className="absolute inset-x-0 top-1/2 mx-auto w-[420px] -translate-y-1/2">
-            <span className="inline-block -rotate-1 bg-[#0a4430] px-4 py-1 text-sm font-extrabold tracking-widest text-[#ebb035]">
+            <div className="rounded-3xl bg-[#0a4430] px-6 pb-4 pt-5">
+              <img
+                src="/img/logo.webp"
+                alt="Gurme"
+                width={520}
+                height={470}
+                className="mx-auto h-36 w-auto"
+              />
+            </div>
+            <span className="mt-4 inline-block -rotate-1 bg-[#0a4430] px-4 py-1 text-sm font-extrabold tracking-widest text-[#ebb035]">
               PİLOT BAŞLADI
             </span>
-            <p className="font-display mt-3 text-5xl font-extrabold leading-none text-[#0a4430]">
-              Gurme Yayında
-            </p>
-            <p className="mt-4 text-lg text-gray-700">
+            <p className="mt-3 text-lg text-gray-700">
               Hisarüstü, Beşiktaş ve Kadıköy&apos;de restoranların sakin saatlerinde
               indirimli masalar seni bekliyor.
             </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-4">
+            <div className="mt-5 flex flex-wrap justify-center gap-4">
               <Cta href="/kayit" gold>
                 Masa bul
               </Cta>
@@ -101,9 +147,16 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Küçük ekran: kartlar altta, çağrı üstte */}
+        {/* Küçük ekran: çağrı üstte, kartlar altta */}
         <div className="mt-8 lg:hidden">
-          <span className="inline-block -rotate-1 bg-[#0a4430] px-4 py-1 text-sm font-extrabold tracking-widest text-[#ebb035]">
+          <img
+            src="/img/pasta.webp"
+            alt=""
+            width={640}
+            height={520}
+            className="mx-auto h-32 w-auto"
+          />
+          <span className="mt-3 inline-block -rotate-1 bg-[#0a4430] px-4 py-1 text-sm font-extrabold tracking-widest text-[#ebb035]">
             PİLOT BAŞLADI
           </span>
           <p className="mx-auto mt-4 max-w-md text-gray-700">
@@ -124,11 +177,40 @@ export default function Landing() {
         <p className="mt-6 text-xs text-gray-500">Örnek görünüm</p>
       </section>
 
+      {/* ---------- Sorun ---------- */}
+      <section className="rounded-[32px] bg-[#0a4430] px-6 py-12 text-white">
+        <h2 className="font-display text-center text-4xl font-extrabold sm:text-5xl">
+          Boş masa saatleri <span className="text-[#ebb035]">pahalıya mal oluyor</span>
+        </h2>
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          {PROBLEMS.map((p) => (
+            <div key={p.img} className="rounded-3xl bg-white/10 p-5 text-center">
+              <img
+                src={p.img}
+                alt=""
+                width={p.w}
+                height={p.h}
+                loading="lazy"
+                className="mx-auto h-36 w-auto"
+              />
+              <p className="mt-3 text-lg font-semibold">{p.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ---------- İki taraf ---------- */}
       <section className="grid gap-5 lg:grid-cols-2">
         <div className="split-card split-gold">
-          <div className="text-5xl">🍽️</div>
-          <h2 className="font-display mt-2 text-4xl font-extrabold sm:text-5xl">
+          <img
+            src="/img/burak.webp"
+            alt="Terasta telefonuna bakan, makarna yiyen genç bir müşteri"
+            width={1000}
+            height={747}
+            loading="lazy"
+            className="mx-auto h-52 w-full max-w-md rounded-3xl object-cover"
+          />
+          <h2 className="font-display mt-5 text-4xl font-extrabold sm:text-5xl">
             Yemek yiyenler için Gurme
           </h2>
           <p className="mx-auto mt-3 max-w-md text-lg">
@@ -156,8 +238,15 @@ export default function Landing() {
         </div>
 
         <div className="split-card split-green">
-          <div className="text-5xl">🏪</div>
-          <h2 className="font-display mt-2 text-4xl font-extrabold text-[#ebb035] sm:text-5xl">
+          <img
+            src="/img/gozde.webp"
+            alt="Restoranının önünde gülümseyen kadın restoran sahibi"
+            width={1000}
+            height={747}
+            loading="lazy"
+            className="mx-auto h-52 w-full max-w-md rounded-3xl object-cover"
+          />
+          <h2 className="font-display mt-5 text-4xl font-extrabold text-[#ebb035] sm:text-5xl">
             Restoranlar için Gurme
           </h2>
           <p className="mx-auto mt-3 max-w-md text-lg text-[#cfe8da]">
@@ -197,26 +286,66 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ---------- Tek platform, iki tarafa değer ---------- */}
+      <section className="grid items-center gap-8 rounded-[32px] bg-[#0a4430] px-6 py-12 text-white lg:grid-cols-2 lg:px-12">
+        <div>
+          <h2 className="font-display text-4xl font-extrabold leading-tight sm:text-5xl">
+            Tek platform, <span className="text-[#ebb035]">iki tarafa da değer.</span>
+          </h2>
+          <div className="mt-6 space-y-4">
+            <div className="rounded-2xl bg-white/10 p-4">
+              <p className="font-display text-2xl font-bold text-[#ebb035]">Restoranlar</p>
+              <p className="mt-1 text-[#cfe8da]">Sakin saatlerde masa devir hızını artırır.</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 p-4">
+              <p className="font-display text-2xl font-bold text-[#ebb035]">Müşteriler</p>
+              <p className="mt-1 text-[#cfe8da]">İhtiyaç duyduklarında uygun fiyatlı yemek bulur.</p>
+            </div>
+          </div>
+        </div>
+        <img
+          src="/img/restoran-musteri.webp"
+          alt="Restoran ile müşteriyi telefon üzerinden buluşturan çizim"
+          width={672}
+          height={423}
+          loading="lazy"
+          className="mx-auto w-full max-w-md"
+        />
+      </section>
+
       {/* ---------- Nasıl çalışır ---------- */}
       <section>
         <h2 className="font-display text-center text-4xl font-extrabold text-[#0a4430]">
           Nasıl çalışır?
         </h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {STEPS.map((s) => (
-            <div key={s.n} className="card text-center">
-              <div className="text-4xl">{s.emoji}</div>
-              <h3 className="font-display mt-2 text-2xl font-bold">
-                {s.n}. {s.title}
+          {STEPS.map((s, i) => (
+            <div key={s.img} className="rounded-3xl bg-[#0a4430] p-6 text-center text-white">
+              <img
+                src={s.img}
+                alt=""
+                width={s.w}
+                height={s.h}
+                loading="lazy"
+                className="mx-auto h-40 w-auto"
+              />
+              <h3 className="font-display mt-3 text-2xl font-bold text-[#ebb035]">
+                {i + 1}. {s.title}
               </h3>
-              <p className="mt-1 text-sm text-gray-600">{s.text}</p>
+              <p className="mt-1 text-sm text-[#cfe8da]">{s.text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ---------- Bölgeler ve kapanış ---------- */}
-      <section className="rounded-[32px] bg-[#0a4430] px-6 py-12 text-center text-white">
+      {/* ---------- Kapanış ---------- */}
+      <section
+        className="rounded-[32px] bg-cover bg-center px-6 py-14 text-center text-white"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(10,68,48,0.86), rgba(10,68,48,0.9)), url(/img/ortam.webp)",
+        }}
+      >
         <h2 className="font-display text-4xl font-extrabold text-[#ebb035] sm:text-5xl">
           Masalar boş kalmasın.
         </h2>

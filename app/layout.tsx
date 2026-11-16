@@ -3,6 +3,7 @@ import { Inter, Baloo_2 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import Header from "@/components/Header";
+import SupportButton from "@/components/SupportButton";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
           <footer className="px-4 py-6 text-center text-xs text-gray-500">
             Gurme · Okul projesi kapsamında yürütülen pilot çalışma
           </footer>
+          <SupportButton />
         </AuthProvider>
       </body>
     </html>
