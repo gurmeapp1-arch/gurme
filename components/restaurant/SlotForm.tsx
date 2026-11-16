@@ -121,8 +121,11 @@ export default function SlotForm({
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-4">
-      <h2 className="text-xl font-bold">Yeni indirim slotu aç</h2>
+    <form onSubmit={submit} className="space-y-4 rounded-xl bg-white p-5 ring-1 ring-gray-200">
+      <div>
+        <h2 className="text-lg font-bold text-gray-900">Yeni indirim aç</h2>
+        <p className="text-sm text-gray-500">Sakin saatini seç, indirim oranını yaz. Müşteriler hemen görür.</p>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">{repeat ? "Başlangıç tarihi" : "Tarih"}</label>
@@ -170,7 +173,7 @@ export default function SlotForm({
           />
         </div>
         <div>
-          <label className="label">Kontenjan (kişi)</label>
+          <label className="label">Kaç kişilik yer?</label>
           <input
             type="number"
             className="input"
@@ -182,7 +185,7 @@ export default function SlotForm({
         </div>
       </div>
 
-      <div className="rounded-xl bg-[#f7f3e8] p-4">
+      <div className="rounded-xl bg-gray-50 p-4">
         <label className="flex cursor-pointer items-center gap-2 font-semibold">
           <input type="checkbox" checked={repeat} onChange={(e) => toggleRepeat(e.target.checked)} />
           Her hafta tekrarla
@@ -244,11 +247,8 @@ export default function SlotForm({
       )}
 
       <button className="btn btn-gold" disabled={busy}>
-        {busy ? "Açılıyor..." : repeat ? "Slotları aç" : "Slotu aç"}
+        {busy ? "Açılıyor..." : "İndirimi yayınla"}
       </button>
-      <p className="text-sm text-gray-600">
-        Müşteri rezervasyon kodunu masada gösterir, indirimi sen kasada uygularsın.
-      </p>
     </form>
   );
 }

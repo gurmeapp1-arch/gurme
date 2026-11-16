@@ -66,6 +66,7 @@ export default function RestoranPage() {
   const [fresh, setFresh] = useState<Reservation[]>([]);
   const [notifPerm, setNotifPerm] = useState("unsupported");
   const seen = useRef<Set<string> | null>(null);
+  const [tab, setTab] = useState<"rez" | "slot" | "profil">("rez");
 
   const loadAll = useCallback(async () => {
     if (!user) return;
@@ -204,200 +205,293 @@ export default function RestoranPage() {
       </div>
     );
 
-  const upcoming = slots.filter((s) => toDate(s.slot_date, s.end_time) >= now);
-  const past = slots.filter((s) => toDate(s.slot_date, s.end_time) < now).reverse();
+  const upcomingSlots = slots.filter((s) => toDate(s.slot_date, s.end_time) >= now);
+  const slotById = new Map(slots.map((s) => [s.id, s]));
+  const startOf = (r: Reservation) => {
+    const s = slotById.get(r.slot_id);
+    return s ? toDate(s.slot_date, s.start_time).getTime() : 0;
+  };
+  const endOf = (r: Reservation) => {
+    const s = slotById.get(r.slot_id);
+    return s ? toDate(s.slot_date, s.end_time) : new Date(0);
+  };
+  const upcomingRes = reservations
+    .filter((r) => r.status !== "cancelled" && endOf(r) >= now)
+    .sort((a, b) => startOf(a) - startOf(b));
+  const pastRes = reservations
+    .filter((r) => endOf(r) < now || r.status === "cancelled")
+    .sort((a, b) => startOf(b) - startOf(a));
+  const upcomingPeople = upcomingRes.reduce((n, r) => n + r.party_size, 0);
 
-  const renderSlot = (s: Slot) => {
-    const list = reservations.filter((r) => r.slot_id === s.id);
-    const booked = list
-      .filter((r) => r.status !== "cancelled")
-      .reduce((n, r) => n + r.party_size, 0);
+  const renderRes = (r: Reservation) => {
+    const s = slotById.get(r.slot_id);
+    if (!s) return null;
+    const wa = toWhatsAppNumber(r.phone);
     const started = toDate(s.slot_date, s.start_time) <= now;
-
+    const cancelled = r.status === "cancelled";
     return (
-      <div key={s.id} className="card">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="font-bold">
-              {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)}
-            </p>
-            <p className="text-sm text-gray-600">
-              Kontenjan: {booked}/{s.capacity} kişi
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="rounded-full bg-[#ebb035] px-3 py-1 text-sm font-bold text-[#0a4430]">
-              %{s.discount_percent} indirim
-            </span>
-            <button onClick={() => deleteSlot(s.id)} className="text-sm text-red-700 underline">
-              Sil
-            </button>
-          </div>
-        </div>
-
-        {list.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">Henüz rezervasyon yok.</p>
-        ) : (
-          <ul className="mt-3 divide-y">
-            {list.map((r) => {
-              const wa = toWhatsAppNumber(r.phone);
-              return (
-                <li
-                  key={r.id}
-                  className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm"
+      <li
+        key={r.id}
+        className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+          cancelled ? "opacity-50" : ""
+        }`}
+      >
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-900">
+            {r.reservation_name} <span className="font-normal text-gray-500">· {r.party_size} kişi</span>
+          </p>
+          <p className="text-sm text-gray-500">
+            {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)} · %{s.discount_percent}
+          </p>
+          <p className="mt-0.5 text-sm">
+            <a href={`tel:${r.phone}`} className="text-gray-700 underline">
+              {r.phone}
+            </a>
+            {wa && (
+              <>
+                {" · "}
+                <a
+                  href={whatsAppLink(
+                    wa,
+                    `Merhaba ${r.reservation_name}, Gurme üzerinden ${r.code} kodlu rezervasyonunuz için yazıyoruz.`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-700 underline"
                 >
-                  <div>
-                    <span className="font-mono font-bold">{r.code}</span> · {r.reservation_name} ·{" "}
-                    {r.party_size} kişi ·{" "}
-                    <a href={`tel:${r.phone}`} className="underline">
-                      {r.phone}
-                    </a>
-                    {wa && (
-                      <>
-                        {" · "}
-                        <a
-                          href={whatsAppLink(wa, `Merhaba ${r.reservation_name}, Gurme üzerinden ${r.code} kodlu rezervasyonunuz için yazıyoruz.`)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline"
-                        >
-                          WhatsApp
-                        </a>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-[#f7f3e8] px-2 py-0.5 font-semibold">
-                      {STATUS_LABEL[r.status]}
-                    </span>
-                    {started && r.status !== "cancelled" && (
-                      <>
-                        <button
-                          onClick={() => mark(r.id, "attended")}
-                          className="btn btn-sm"
-                          style={{ opacity: r.status === "attended" ? 1 : 0.6 }}
-                        >
-                          Geldi
-                        </button>
-                        <button
-                          onClick={() => mark(r.id, "no_show")}
-                          className="btn btn-sm"
-                          style={{
-                            background: "#9b2c2c",
-                            opacity: r.status === "no_show" ? 1 : 0.6,
-                          }}
-                        >
-                          Gelmedi
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+                  WhatsApp
+                </a>
+              </>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="rounded-lg bg-gray-100 px-2.5 py-1 font-mono text-sm font-bold tracking-wide">
+            {r.code}
+          </span>
+          {cancelled || r.status === "attended" || r.status === "no_show" ? (
+            <span className="text-sm font-semibold text-gray-600">{STATUS_LABEL[r.status]}</span>
+          ) : null}
+          {started && !cancelled && (
+            <>
+              <button
+                onClick={() => mark(r.id, "attended")}
+                className="btn btn-sm"
+                style={{ opacity: r.status === "no_show" ? 0.5 : 1 }}
+              >
+                Geldi
+              </button>
+              <button
+                onClick={() => mark(r.id, "no_show")}
+                className="btn btn-sm"
+                style={{ background: "#9b2c2c", opacity: r.status === "attended" ? 0.5 : 1 }}
+              >
+                Gelmedi
+              </button>
+            </>
+          )}
+        </div>
+      </li>
     );
   };
 
+  const tabs: { id: "rez" | "slot" | "profil"; label: string; badge?: number }[] = [
+    { id: "rez", label: "Rezervasyonlar", badge: upcomingRes.length },
+    { id: "slot", label: "İndirimlerim" },
+    { id: "profil", label: "Profil" },
+  ];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center gap-4">
         {restaurant.logo_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={restaurant.logo_url}
-            alt=""
-            className="h-16 w-16 rounded-full object-cover shadow"
-          />
+          <img src={restaurant.logo_url} alt="" className="h-14 w-14 rounded-full object-cover" />
         )}
         <div>
-          <h1 className="font-display text-4xl font-extrabold leading-tight text-[#0a4430]">
+          <h1 className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">
             {restaurant.name}
           </h1>
-          <p className="flex flex-wrap items-center gap-2 text-gray-600">
-            {restaurant.district} · Restoran paneli
+          <p className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+            {restaurant.district}
             {rating && (
-              <span className="inline-flex items-center gap-1 text-sm">
-                <Stars value={rating.avg} /> {rating.avg.toFixed(1)} ({rating.count} yorum)
+              <span className="inline-flex items-center gap-1">
+                <Stars value={rating.avg} /> {rating.avg.toFixed(1)} ({rating.count})
               </span>
             )}
           </p>
         </div>
       </div>
 
-      {fresh.length > 0 && (
-        <div className="rounded-2xl bg-[#ebb035] p-4 text-[#0a4430]" role="status">
-          <p className="font-display text-xl font-extrabold">
-            {fresh.length === 1 ? "Yeni rezervasyon geldi!" : `${fresh.length} yeni rezervasyon geldi!`}
-          </p>
-          <ul className="mt-1 text-sm font-semibold">
-            {fresh.slice(0, 5).map((r) => (
-              <li key={r.id}>
-                {r.code} · {r.reservation_name} · {r.party_size} kişi
-              </li>
-            ))}
-          </ul>
-          <button onClick={() => setFresh([])} className="btn btn-sm mt-3">
-            Tamam
-          </button>
-        </div>
-      )}
-
-      {notifPerm === "default" && (
-        <div className="card flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm">
-            Yeni rezervasyon gelince bildirim almak ister misin? Sayfa açıkken çalışır.
-          </p>
+      <div className="flex gap-1 border-b border-gray-200">
+        {tabs.map((t) => (
           <button
-            className="btn btn-sm"
-            onClick={() => Notification.requestPermission().then(setNotifPerm)}
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold sm:text-base ${
+              tab === t.id
+                ? "border-[#0a4430] text-[#0a4430]"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+            }`}
           >
-            Bildirimleri aç
+            {t.label}
+            {t.badge ? (
+              <span className="ml-1.5 rounded-full bg-[#0a4430] px-2 py-0.5 text-xs text-white">
+                {t.badge}
+              </span>
+            ) : null}
           </button>
-        </div>
-      )}
-
-      <ProfileEditor restaurant={restaurant} onSaved={loadAll} />
-
-      <SlotForm restaurantId={restaurant.id} existing={slots} onCreated={loadAll} />
+        ))}
+      </div>
 
       {msg && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{msg}</p>}
 
-      <section className="space-y-3">
-        <h2 className="text-xl font-bold">Yaklaşan ve devam eden slotlar</h2>
-        {upcoming.length === 0 && <p className="text-gray-600">Henüz açık slotun yok.</p>}
-        {upcoming.map(renderSlot)}
-      </section>
+      {tab === "rez" && (
+        <div className="space-y-5">
+          {fresh.length > 0 && (
+            <div className="rounded-xl border border-[#ebb035] bg-[#fff8e6] p-4" role="status">
+              <p className="font-bold text-[#0a4430]">
+                {fresh.length === 1
+                  ? "Yeni rezervasyon geldi"
+                  : `${fresh.length} yeni rezervasyon geldi`}
+              </p>
+              <ul className="mt-1 text-sm text-gray-700">
+                {fresh.slice(0, 5).map((r) => (
+                  <li key={r.id}>
+                    {r.code} · {r.reservation_name} · {r.party_size} kişi
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => setFresh([])} className="btn btn-sm mt-3">
+                Tamam
+              </button>
+            </div>
+          )}
 
-      <section className="space-y-3">
-        <h2 className="text-xl font-bold">Müşteri yorumları</h2>
-        {reviews.length === 0 ? (
-          <p className="text-gray-600">
-            Henüz yorum yok. Müşteri geldikten sonra &quot;Geldi&quot; işaretlersen yorum yazabilir.
-          </p>
-        ) : (
-          <ul className="space-y-3">
-            {reviews.map((r) => (
-              <li key={r.id} className="card">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold">{r.reviewer_name}</span>
-                  <span className="text-xs text-gray-500">{fmtShort(r.created_at)}</span>
-                </div>
-                <Stars value={r.rating} />
-                {r.comment && <p className="mt-1 text-sm">{r.comment}</p>}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          {notifPerm === "default" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-4 text-sm ring-1 ring-gray-200">
+              <p>Yeni rezervasyon gelince bildirim al (sayfa açıkken çalışır).</p>
+              <button
+                className="btn btn-sm"
+                onClick={() => Notification.requestPermission().then(setNotifPerm)}
+              >
+                Bildirimleri aç
+              </button>
+            </div>
+          )}
 
-      {past.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-xl font-bold">Geçmiş slotlar (son 14 gün)</h2>
-          {past.map(renderSlot)}
-        </section>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl bg-white p-4 ring-1 ring-gray-200">
+              <p className="text-2xl font-extrabold text-[#0a4430]">{upcomingRes.length}</p>
+              <p className="text-xs text-gray-500">Yaklaşan rezervasyon</p>
+            </div>
+            <div className="rounded-xl bg-white p-4 ring-1 ring-gray-200">
+              <p className="text-2xl font-extrabold text-[#0a4430]">{upcomingPeople}</p>
+              <p className="text-xs text-gray-500">Beklenen kişi</p>
+            </div>
+            <div className="rounded-xl bg-white p-4 ring-1 ring-gray-200">
+              <p className="text-2xl font-extrabold text-[#0a4430]">{upcomingSlots.length}</p>
+              <p className="text-xs text-gray-500">Açık indirim</p>
+            </div>
+          </div>
+
+          <section>
+            <h2 className="mb-2 font-bold text-gray-900">Yaklaşan rezervasyonlar</h2>
+            {upcomingRes.length === 0 ? (
+              <div className="rounded-xl bg-white p-6 text-center ring-1 ring-gray-200">
+                <p className="text-gray-700">Henüz rezervasyon yok.</p>
+                <button onClick={() => setTab("slot")} className="btn btn-sm mt-3">
+                  İndirim aç
+                </button>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
+                {upcomingRes.map(renderRes)}
+              </ul>
+            )}
+            <p className="mt-2 text-xs text-gray-500">
+              Müşteri kodunu masada gösterir, indirimi kasada sen uygularsın.
+            </p>
+          </section>
+
+          {pastRes.length > 0 && (
+            <details className="rounded-xl bg-white ring-1 ring-gray-200">
+              <summary className="cursor-pointer px-4 py-3 font-semibold text-gray-700">
+                Geçmiş rezervasyonlar ({pastRes.length})
+              </summary>
+              <ul className="divide-y divide-gray-100 border-t border-gray-100">
+                {pastRes.map(renderRes)}
+              </ul>
+            </details>
+          )}
+        </div>
+      )}
+
+      {tab === "slot" && (
+        <div className="space-y-5">
+          <SlotForm restaurantId={restaurant.id} existing={slots} onCreated={loadAll} />
+
+          <section>
+            <h2 className="mb-2 font-bold text-gray-900">Açık indirimler</h2>
+            {upcomingSlots.length === 0 ? (
+              <p className="text-gray-600">Henüz açık indirimin yok.</p>
+            ) : (
+              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
+                {upcomingSlots.map((s) => {
+                  const booked = reservations
+                    .filter((r) => r.slot_id === s.id && r.status !== "cancelled")
+                    .reduce((n, r) => n + r.party_size, 0);
+                  return (
+                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                      <div>
+                        <p className="font-semibold">
+                          {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          %{s.discount_percent} indirim · {booked}/{s.capacity} kişi
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => deleteSlot(s.id)}
+                        className="text-sm text-red-700 underline"
+                      >
+                        Sil
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </div>
+      )}
+
+      {tab === "profil" && (
+        <div className="space-y-8">
+          <ProfileEditor restaurant={restaurant} onSaved={loadAll} />
+
+          <section>
+            <h2 className="mb-2 font-bold text-gray-900">Müşteri yorumları</h2>
+            {reviews.length === 0 ? (
+              <p className="text-gray-600">
+                Henüz yorum yok. Müşteri geldikten sonra &quot;Geldi&quot; işaretlersen yorum yazabilir.
+              </p>
+            ) : (
+              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
+                {reviews.map((r) => (
+                  <li key={r.id} className="px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-semibold">{r.reviewer_name}</span>
+                      <span className="text-xs text-gray-500">{fmtShort(r.created_at)}</span>
+                    </div>
+                    <Stars value={r.rating} />
+                    {r.comment && <p className="mt-1 text-sm">{r.comment}</p>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       )}
     </div>
   );

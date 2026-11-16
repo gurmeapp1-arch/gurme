@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Baloo_2 } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import Header from "@/components/Header";
@@ -7,8 +7,8 @@ import SupportButton from "@/components/SupportButton";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
-// Başlıklar için yuvarlak, oyuncu bir font (Türkçe karakterler latin-ext içinde)
-const display = Baloo_2({
+// Başlıklar için temiz, kurumsal bir font (Türkçe karakterler latin-ext içinde)
+const display = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
   variable: "--font-display",
   display: "swap",
