@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { roleHome } from "@/lib/roles";
+import { readSource } from "@/lib/source";
 
 // Giriş sonrası dönülecek sayfa (?next=/rezervasyon/...). Sadece site içi yollar kabul edilir.
 function safeNext(): string | null {
@@ -54,6 +55,10 @@ export default function GirisPage() {
       );
       return;
     }
+
+    // E-posta onayı açıksa kayıt anında oturum olmaz; kaynak bilgisini ilk girişte kaydet
+    const src = readSource();
+    if (src) await supabase.rpc("set_signup_source", { p_source: src });
 
     router.push(safeNext() ?? "/");
     router.refresh();
