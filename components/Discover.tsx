@@ -81,7 +81,7 @@ export default function Discover() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-[#0a4430]">İndirimli masalar</h1>
+        <h1 className="font-display text-4xl font-extrabold text-[#0a4430]">İndirimli masalar</h1>
         <p className="mt-1 text-gray-600">
           Restoranların sakin saatlerinde açtığı indirimli masaları seç, rezervasyonunu yap.
         </p>
@@ -146,38 +146,40 @@ export default function Discover() {
             const started = toDate(s.slot_date, s.start_time) <= now!;
             const full = Math.round(((s.capacity - s.remaining) / s.capacity) * 100);
             return (
-              <div key={s.id} className="card card-hover flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-xl font-bold leading-tight">{s.restaurant_name}</h2>
-                    <p className="mt-0.5 text-sm text-gray-600">
-                      {s.district}
-                      {s.address ? ` · ${s.address}` : ""}
-                    </p>
-                  </div>
-                  <div className="discount">
+              <div key={s.id} className="card card-hover flex flex-col gap-3" style={{ padding: 12 }}>
+                <div className="ticket-tile relative h-28">
+                  <span className="text-6xl">🍽️</span>
+                  <div className="discount absolute right-3 top-3">
                     %{s.discount_percent}
                     <small>İNDİRİM</small>
                   </div>
+                  {started && (
+                    <span className="pill pill-live absolute left-3 top-3">Şu an açık</span>
+                  )}
                 </div>
 
-                {s.description && <p className="text-sm">{s.description}</p>}
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold">
+                <div className="px-1">
+                  <h2 className="font-display text-2xl font-bold leading-tight">
+                    {s.restaurant_name}
+                  </h2>
+                  <p className="mt-0.5 text-sm text-gray-600">
+                    {s.district}
+                    {s.address ? ` · ${s.address}` : ""}
+                  </p>
+                  {s.description && <p className="mt-2 text-sm">{s.description}</p>}
+                  <p className="mt-2 font-semibold">
                     {dayLabel(s.slot_date, now!)} · {hm(s.start_time)}–{hm(s.end_time)}
-                  </span>
-                  {started && <span className="pill pill-live">Şu an açık</span>}
+                  </p>
                 </div>
 
-                <div>
+                <div className="px-1">
                   <div className="h-1.5 overflow-hidden rounded-full bg-[#ece8d9]">
                     <div className="h-full rounded-full bg-[#ebb035]" style={{ width: `${full}%` }} />
                   </div>
                   <p className="mt-1 text-xs text-gray-600">Kalan kontenjan: {s.remaining} kişi</p>
                 </div>
 
-                <Link href={`/rezervasyon/${s.id}`} className="btn mt-1">
+                <Link href={`/rezervasyon/${s.id}`} className="btn">
                   Rezervasyon yap
                 </Link>
               </div>
