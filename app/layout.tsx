@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Lora } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import Header from "@/components/Header";
@@ -10,8 +10,9 @@ import Link from "next/link";
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 // Başlıklar için sıcak, yemek markalarına yakışan bir font (Türkçe karakterler latin-ext içinde)
-const display = Plus_Jakarta_Sans({
+const display = Lora({
   subsets: ["latin", "latin-ext"],
+  weight: ["600", "700"],
   variable: "--font-display",
   display: "swap",
 });
