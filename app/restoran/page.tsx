@@ -220,7 +220,7 @@ export default function RestoranPage() {
     .filter((r) => r.status !== "cancelled" && endOf(r) >= now)
     .sort((a, b) => startOf(a) - startOf(b));
   const pastRes = reservations
-    .filter((r) => endOf(r) < now || r.status === "cancelled")
+    .filter((r) => endOf(r) < now && r.status !== "cancelled")
     .sort((a, b) => startOf(b) - startOf(a));
   // Bu ay (Türkiye saatiyle) gelen müşteriler
   const monthStart = istDate(now).slice(0, 8) + "01";
@@ -233,10 +233,9 @@ export default function RestoranPage() {
     .reduce((n, r) => n + r.party_size, 0);
   const today = istDate(now);
   const todayRes = upcomingRes.filter((r) => slotById.get(r.slot_id)?.slot_date === today);
-  const laterRes = upcomingRes.filter((r) => slotById.get(r.slot_id)?.slot_date !== today);
-  const upcomingPeople = upcomingRes.reduce((n, r) => n + r.party_size, 0);
+  const todayPeople = todayRes.reduce((n, r) => n + r.party_size, 0);
 
-  const renderRes = (r: Reservation) => {
+  const renderRes = (r: Reservation, withDate = false) => {
     const s = slotById.get(r.slot_id);
     if (!s) return null;
     const wa = toWhatsAppNumber(r.phone);
@@ -253,9 +252,11 @@ export default function RestoranPage() {
           <p className="font-semibold text-gray-900">
             {r.reservation_name} <span className="font-normal text-gray-500">· {r.party_size} kişi</span>
           </p>
-          <p className="text-sm text-gray-500">
-            {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)} · %{s.discount_percent}
-          </p>
+          {withDate && (
+            <p className="text-sm text-gray-500">
+              {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)} · %{s.discount_percent}
+            </p>
+          )}
           <p className="mt-0.5 text-sm">
             <a href={`tel:${r.phone}`} className="text-gray-700 underline">
               {r.phone}
@@ -317,6 +318,46 @@ export default function RestoranPage() {
           )}
         </div>
       </li>
+    );
+  };
+
+  // Yaklaşan rezervasyonları gün ve saat dilimine göre grupla (MHRS gibi)
+  const renderGrouped = (list: Reservation[]) => {
+    const dates = [...new Set(list.map((r) => slotById.get(r.slot_id)!.slot_date))];
+    return (
+      <div className="space-y-6">
+        {dates.map((d) => {
+          const dayRes = list.filter((r) => slotById.get(r.slot_id)!.slot_date === d);
+          const slotIds = [...new Set(dayRes.map((r) => r.slot_id))];
+          return (
+            <div key={d}>
+              <h3 className="mb-2 text-lg font-extrabold text-gray-900">
+                {d === today ? `Bugün · ${fmtDate(d)}` : fmtDate(d)}
+              </h3>
+              <div className="space-y-3">
+                {slotIds.map((sid) => {
+                  const sl = slotById.get(sid)!;
+                  const rs = dayRes.filter((r) => r.slot_id === sid);
+                  const people = rs.reduce((n, r) => n + r.party_size, 0);
+                  return (
+                    <div key={sid} className="overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
+                      <div className="flex flex-wrap items-center justify-between gap-2 bg-gray-50 px-4 py-2 text-sm">
+                        <span className="font-bold text-gray-900">
+                          {hm(sl.start_time)}–{hm(sl.end_time)}
+                        </span>
+                        <span className="text-gray-500">
+                          %{sl.discount_percent} indirim · {people}/{sl.capacity} kişi
+                        </span>
+                      </div>
+                      <ul className="divide-y divide-gray-100">{rs.map((r) => renderRes(r))}</ul>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     );
   };
 
@@ -406,63 +447,31 @@ export default function RestoranPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl bg-white p-4 ring-1 ring-gray-200">
-              <p className="text-2xl font-extrabold text-[#0a4430]">{upcomingRes.length}</p>
-              <p className="text-xs text-gray-500">Yaklaşan rezervasyon</p>
-            </div>
-            <div className="rounded-xl bg-white p-4 ring-1 ring-gray-200">
-              <p className="text-2xl font-extrabold text-[#0a4430]">{upcomingPeople}</p>
-              <p className="text-xs text-gray-500">Beklenen kişi</p>
-            </div>
-            <div className="rounded-xl bg-white p-4 ring-1 ring-gray-200">
-              <p className="text-2xl font-extrabold text-[#0a4430]">{upcomingSlots.length}</p>
-              <p className="text-xs text-gray-500">Açık indirim</p>
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-[#0a4430] p-4 text-white">
-            <p className="text-sm text-[#cfe8da]">Bu ay Gurme ile</p>
-            <p className="text-2xl font-extrabold">
-              {monthAttended} kişi geldi
-              <span className="ml-2 text-base font-semibold text-[#ebb035]">
-                ({monthRes.length} rezervasyon)
-              </span>
+          <div className="flex flex-wrap gap-x-8 gap-y-2 rounded-xl bg-white px-5 py-4 ring-1 ring-gray-200">
+            <p className="text-gray-600">
+              <span className="text-2xl font-extrabold text-[#0a4430]">{todayPeople}</span> kişi bugün
+              bekleniyor
+            </p>
+            <p className="text-gray-600">
+              <span className="text-2xl font-extrabold text-[#0a4430]">{monthAttended}</span> kişi bu ay
+              geldi
             </p>
           </div>
 
-          {todayRes.length > 0 && (
-            <section>
-              <h2 className="mb-2 font-bold text-gray-900">
-                Bugün gelecekler ({todayRes.length})
-              </h2>
-              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-2 ring-[#0a4430]">
-                {todayRes.map(renderRes)}
-              </ul>
-              <p className="mt-2 text-xs text-gray-500">
-                &quot;Hatırlat&quot;a basınca WhatsApp hazır bir mesajla açılır, sen sadece gönder.
-              </p>
-            </section>
-          )}
-
           <section>
-            <h2 className="mb-2 font-bold text-gray-900">Yaklaşan rezervasyonlar</h2>
-            {laterRes.length === 0 && todayRes.length > 0 ? (
-              <p className="text-gray-600">Sonraki günler için rezervasyon yok.</p>
-            ) : upcomingRes.length === 0 ? (
+            {upcomingRes.length === 0 ? (
               <div className="rounded-xl bg-white p-6 text-center ring-1 ring-gray-200">
-                <p className="text-gray-700">Henüz rezervasyon yok.</p>
+                <p className="text-gray-700">Aktif rezervasyon yok.</p>
                 <button onClick={() => setTab("slot")} className="btn btn-sm mt-3">
                   İndirim aç
                 </button>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100 rounded-xl bg-white ring-1 ring-gray-200">
-                {laterRes.map(renderRes)}
-              </ul>
+              renderGrouped(upcomingRes)
             )}
-            <p className="mt-2 text-xs text-gray-500">
-              Müşteri kodunu masada gösterir, indirimi kasada sen uygularsın.
+            <p className="mt-3 text-xs text-gray-500">
+              Müşteri kodunu masada gösterir, indirimi kasada sen uygularsın. &quot;Hatırlat&quot;a
+              basınca WhatsApp hazır mesajla açılır.
             </p>
           </section>
 
@@ -472,7 +481,7 @@ export default function RestoranPage() {
                 Geçmiş rezervasyonlar ({pastRes.length})
               </summary>
               <ul className="divide-y divide-gray-100 border-t border-gray-100">
-                {pastRes.map(renderRes)}
+                {pastRes.map((r) => renderRes(r, true))}
               </ul>
             </details>
           )}
