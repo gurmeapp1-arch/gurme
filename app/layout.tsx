@@ -18,8 +18,8 @@ const display = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Gurme | Her masa saati değerli",
-  description: "Boş masa saatlerinde indirimli restoran rezervasyonu.",
+  title: "Gurme | İndirimli rezervasyon",
+  description: "İndirimli restoran rezervasyonu.",
 };
 
 export default function RootLayout({

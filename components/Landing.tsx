@@ -16,11 +16,10 @@ export default function Landing() {
         <div className="lg:col-span-3">
           <p className="text-sm font-medium text-[#14664a]">Hisarüstü · Beşiktaş · Kadıköy</p>
           <h1 className="mt-2 text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-900 sm:text-5xl">
-            Kafe boşken git, daha az öde.
+            Sevdiğin yerlere indirimli rezervasyon.
           </h1>
           <p className="mt-4 max-w-lg text-lg text-gray-600">
-            Restoranlar sakin olduğu saatlerde indirimli masa açıyor. Sen yerini ayırıyorsun,
-            hesap gelince kodunu söylüyorsun. Bu kadar.
+            Masanı ayır, hesap gelince kodunu söyle, indirimini al.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-5">
             <Link href="/kayit" className="btn px-6 py-3">

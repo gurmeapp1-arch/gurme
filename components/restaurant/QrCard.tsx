@@ -35,7 +35,7 @@ export default function QrCard({ restaurantName }: { restaurantName: string }) {
       <div className="print-area mx-auto max-w-sm rounded-2xl bg-white p-8 text-center ring-1 ring-gray-200">
         <p className="text-sm font-semibold text-[#14664a]">{restaurantName}</p>
         <h3 className="mt-1 text-2xl font-extrabold leading-tight text-[#0a4430]">
-          Sakin saatlerde indirimli masa
+          İndirimli rezervasyon
         </h3>
         <p className="mt-2 text-gray-600">QR kodu okut, kayıt ol, yerini ayır.</p>
         <div className="mt-5 flex justify-center">
