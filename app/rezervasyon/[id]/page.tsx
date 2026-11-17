@@ -1,5 +1,6 @@
 "use client";
 
+import BackButton from "@/components/BackButton";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -128,12 +129,7 @@ function RezervasyonForm() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <Link
-        href={`/rezervasyon/restoran/${slot.restaurant_id}`}
-        className="text-sm text-gray-600 underline"
-      >
-        ← Diğer gün ve saatler
-      </Link>
+      <BackButton fallback={`/rezervasyon/restoran/${slot.restaurant_id}`} />
       <div className="card overflow-hidden" style={{ padding: 0 }}>
         {slot.cover_url && (
           // eslint-disable-next-line @next/next/no-img-element

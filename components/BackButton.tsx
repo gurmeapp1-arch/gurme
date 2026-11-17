@@ -12,12 +12,12 @@ export default function BackButton({ fallback = "/" }: { fallback?: string }) {
         if (window.history.length > 1) router.back();
         else router.push(fallback);
       }}
-      className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-white text-2xl font-bold text-[#0a4430] shadow-md ring-1 ring-gray-200 active:scale-95 md:hidden"
+      className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-white text-[#0a4430] shadow-md ring-1 ring-gray-200 active:scale-95"
       aria-label="Geri dön"
     >
-      <span aria-hidden="true" className="leading-none">
-        ←
-      </span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 5l-7 7 7 7" />
+      </svg>
     </button>
   );
 }

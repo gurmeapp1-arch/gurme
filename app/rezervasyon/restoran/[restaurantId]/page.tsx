@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import BackButton from "@/components/BackButton";
 import { Suspense, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -85,9 +86,7 @@ function RestoranSayfasi() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <Link href="/" className="text-sm text-gray-600 underline">
-        ← Tüm restoranlar
-      </Link>
+      <BackButton fallback="/" />
 
       <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-gray-200">
         {info.cover_url && (
