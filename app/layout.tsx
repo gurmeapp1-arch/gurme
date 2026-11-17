@@ -18,9 +18,29 @@ const display = Lora({
   display: "swap",
 });
 
+// Paylaşım önizlemesinin tam adresi: Vercel'in verdiği sabit adres (alan adı bağlanınca o kullanılır)
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Gurme | İndirimli rezervasyon",
-  description: "İndirimli restoran rezervasyonu.",
+  description: "Sevdiğin restoran ve kafelere indirimli rezervasyon. Yerini ayır, hesapta kodunu söyle.",
+  openGraph: {
+    title: "Gurme | İndirimli rezervasyon",
+    description: "Sevdiğin restoran ve kafelere indirimli rezervasyon. Yerini ayır, hesapta kodunu söyle.",
+    siteName: "Gurme",
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Gurme | İndirimli rezervasyon",
+    description: "Sevdiğin restoran ve kafelere indirimli rezervasyon.",
+  },
 };
 
 export default function RootLayout({
@@ -38,6 +58,10 @@ export default function RootLayout({
             Gurme · Okul projesi kapsamında yürütülen pilot çalışma ·{" "}
             <Link href="/gizlilik" className="underline">
               Gizlilik ve KVKK
+            </Link>{" "}
+            ·{" "}
+            <Link href="/kosullar" className="underline">
+              Kullanım koşulları
             </Link>
           </footer>
           <Suspense fallback={null}>
