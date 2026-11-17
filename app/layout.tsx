@@ -35,9 +35,11 @@ export const metadata: Metadata = {
     siteName: "Gurme",
     locale: "tr_TR",
     type: "website",
+    images: [{ url: "/img/og.png", width: 1200, height: 630, alt: "Gurme" }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/img/og.png"],
     title: "Gurme | İndirimli rezervasyon",
     description: "Sevdiğin restoran ve kafelere indirimli rezervasyon.",
   },
