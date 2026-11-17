@@ -94,7 +94,7 @@ export default function Discover() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-[#0a4430]">Restoran bul</h1>
+        <h1 className="text-3xl font-extrabold text-[#0a4430]">Restoranlar</h1>
         <p className="mt-1 text-gray-600">Beğendiğin restorana dokun, yerini ayır.</p>
       </div>
 
