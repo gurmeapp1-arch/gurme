@@ -21,3 +21,15 @@ export function nextChangeText(next: number | null | undefined, at: string | nul
   });
   return `${label} itibarıyla indirim: %${next}`;
 }
+
+const r5 = (n: number) => Math.max(5, Math.round(n / 5) * 5);
+
+// Esnaf sadece başlangıç indirimini yazar, düşüşü biz hesaplarız: d → %75'i → %50'si.
+// Slota kalan süreye göre: 48+ saat varsa 3 basamak, 24-48 saat varsa 2, daha azsa sabit.
+export function autoSteps(d: number, hoursAway: number) {
+  const mid = Math.min(d, r5(d * 0.75));
+  const low = Math.min(mid, r5(d * 0.5));
+  if (hoursAway > 48) return { far: d, mid, base: low };
+  if (hoursAway > 24) return { far: null, mid: d, base: low };
+  return { far: null, mid: null, base: d };
+}
