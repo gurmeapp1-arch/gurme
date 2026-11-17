@@ -102,14 +102,14 @@ export default function Discover() {
         <input
           type="search"
           className="input"
-          style={{ width: "auto", flex: "1 1 200px" }}
+          style={{ width: "auto", flex: "1 1 180px", minWidth: 0 }}
           placeholder="Restoran ara"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <select
           className="input"
-          style={{ width: "auto" }}
+          style={{ width: "auto", flex: "1 1 140px", minWidth: 0 }}
           value={district}
           onChange={(e) => setDistrict(e.target.value)}
           aria-label="Semt"
@@ -137,12 +137,12 @@ export default function Discover() {
       )}
 
       {categoryOptions.length > 1 && (
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        <div className="flex flex-wrap gap-2">
           {["all", ...categoryOptions].map((c) => (
             <button
               key={c}
               onClick={() => setCategory(c)}
-              className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ${
+              className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ring-1 ${
                 c === category
                   ? "bg-gray-900 text-white ring-gray-900"
                   : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"
@@ -156,12 +156,12 @@ export default function Discover() {
 
       {now && dayOptions.length > 0 && (
         <div className="space-y-2">
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+          <div className="flex flex-wrap gap-2">
             {["all", ...dayOptions].map((d) => (
               <button
                 key={d}
                 onClick={() => setDay(d)}
-                className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold ring-1 ${
+                className={`rounded-xl px-3 py-1.5 text-sm font-semibold ring-1 ${
                   d === day
                     ? "bg-[#0a4430] text-white ring-[#0a4430]"
                     : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"
@@ -171,12 +171,12 @@ export default function Discover() {
               </button>
             ))}
           </div>
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+          <div className="flex flex-wrap gap-2">
             {[{ id: "all", label: "Her saat" }, ...PARTS].map((p) => (
               <button
                 key={p.id}
                 onClick={() => setPart(p.id)}
-                className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold ring-1 ${
+                className={`rounded-xl px-3 py-1.5 text-sm font-semibold ring-1 ${
                   p.id === part
                     ? "bg-[#14664a] text-white ring-[#14664a]"
                     : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"

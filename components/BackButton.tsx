@@ -12,13 +12,12 @@ export default function BackButton({ fallback = "/" }: { fallback?: string }) {
         if (window.history.length > 1) router.back();
         else router.push(fallback);
       }}
-      className="mb-3 inline-flex min-h-[40px] items-center gap-1 rounded-lg pr-3 text-sm font-semibold text-[#0a4430] md:hidden"
+      className="fixed bottom-24 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-[#0a4430] text-xl text-white shadow-lg ring-1 ring-white/20 active:scale-95 md:hidden"
       aria-label="Geri dön"
     >
-      <span aria-hidden="true" className="text-lg leading-none">
+      <span aria-hidden="true" className="leading-none">
         ←
       </span>
-      Geri
     </button>
   );
 }
