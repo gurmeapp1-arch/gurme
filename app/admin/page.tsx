@@ -21,6 +21,15 @@ type ReviewRow = {
   created_at: string;
   restaurant: { name: string } | null;
 };
+type UserRow = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  role: string;
+  created_at: string;
+  restaurant_name: string | null;
+};
 type Row = {
   id: string;
   code: string;
@@ -71,7 +80,9 @@ export default function AdminPage() {
   const [msg, setMsg] = useState("");
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [sources, setSources] = useState<Record<string, number>>({});
-  const [tab, setTab] = useState<"stats" | "restaurants" | "reservations" | "reviews">("stats");
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [userQuery, setUserQuery] = useState("");
+  const [tab, setTab] = useState<"stats" | "restaurants" | "reservations" | "reviews" | "users">("stats");
 
   const isAdmin = profile?.role === "admin";
 
@@ -106,6 +117,9 @@ export default function AdminPage() {
       .limit(200);
     setReviews(rv2.error ? [] : ((rv2.data ?? []) as unknown as ReviewRow[]));
 
+    const us = await supabase.rpc("admin_list_users");
+    setUsers(us.error ? [] : ((us.data ?? []) as UserRow[]));
+
     const src = await supabase.from("profiles").select("signup_source").eq("role", "diner");
     if (!src.error) {
       const m: Record<string, number> = {};
@@ -116,6 +130,17 @@ export default function AdminPage() {
       setSources(m);
     }
   }, []);
+
+  async function deleteUser(u: UserRow) {
+    setMsg("");
+    const what = u.restaurant_name
+      ? `${u.email} (işletme: ${u.restaurant_name}). Bu işletmenin slotları, rezervasyonları ve yorumları da silinir`
+      : `${u.email}. Bu kullanıcının rezervasyonları ve yorumları da silinir`;
+    if (!confirm(`Silinecek: ${what}. Bu işlem geri alınamaz. Emin misin?`)) return;
+    const { error } = await supabase.rpc("admin_delete_user", { p_user_id: u.id });
+    if (error) setMsg(error.message);
+    else load();
+  }
 
   async function deleteReview(id: string) {
     setMsg("");
@@ -214,6 +239,7 @@ export default function AdminPage() {
         {tabBtn("restaurants", `Restoranlar${pending ? ` (${pending} onay bekliyor)` : ""}`)}
         {tabBtn("reservations", "Rezervasyonlar")}
         {tabBtn("reviews", `Yorumlar (${reviews.length})`)}
+        {tabBtn("users", `Kullanıcılar (${users.length})`)}
       </div>
 
       {msg && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{msg}</p>}
@@ -301,6 +327,50 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {tab === "users" && (
+        <div className="space-y-3">
+          <input
+            className="input"
+            placeholder="Ad, e-posta ya da işletme ara"
+            value={userQuery}
+            onChange={(e) => setUserQuery(e.target.value)}
+          />
+          {users.length === 0 && (
+            <p className="text-gray-600">
+              Liste boş ya da yüklenemedi. Veritabanı yamasının (patch_5) çalıştığından emin ol.
+            </p>
+          )}
+          {users
+            .filter((u) =>
+              `${u.full_name ?? ""} ${u.email} ${u.restaurant_name ?? ""}`
+                .toLocaleLowerCase("tr-TR")
+                .includes(userQuery.trim().toLocaleLowerCase("tr-TR"))
+            )
+            .map((u) => (
+              <div key={u.id} className="card flex flex-wrap items-center justify-between gap-3 text-sm">
+                <div className="min-w-0">
+                  <p className="font-semibold">
+                    {u.full_name || "(adsız)"}{" "}
+                    <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-normal">
+                      {u.role === "diner" ? "Müşteri" : u.role === "restaurant" ? "İşletme" : "Yönetici"}
+                    </span>
+                  </p>
+                  <p className="break-all text-gray-600">{u.email}</p>
+                  <p className="text-xs text-gray-500">
+                    {u.restaurant_name ? `${u.restaurant_name} · ` : ""}
+                    {u.phone ? `${u.phone} · ` : ""}Kayıt: {fmtDay(u.created_at.slice(0, 10))}
+                  </p>
+                </div>
+                {u.role !== "admin" && (
+                  <button onClick={() => deleteUser(u)} className="text-red-700 underline">
+                    Sil
+                  </button>
+                )}
+              </div>
+            ))}
         </div>
       )}
 
