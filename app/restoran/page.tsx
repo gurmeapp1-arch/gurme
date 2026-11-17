@@ -73,7 +73,7 @@ export default function RestoranPage() {
     if (!user) return;
     const { data: r } = await supabase
       .from("restaurants")
-      .select("id, name, district, approved, address, phone, description, cover_url, logo_url")
+      .select("id, name, district, approved, address, phone, description, cover_url, logo_url, category, hours, instagram, menu_url")
       .eq("owner_id", user.id)
       .maybeSingle();
     const rest = r as Restaurant | null;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StarInput } from "@/components/Stars";
+import { useAuth } from "@/components/AuthProvider";
 
 // Yemekten sonra restoran "geldi" işaretlediyse müşteri puan ve yorum yazabilir
 export default function ReviewBox({
@@ -16,6 +17,9 @@ export default function ReviewBox({
 }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
+  const { profile } = useAuth();
+  const firstName = (profile?.full_name ?? "").split(" ")[0] || "Adın";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,6 +32,7 @@ export default function ReviewBox({
       p_reservation_id: reservationId,
       p_rating: rating,
       p_comment: comment.trim(),
+      p_anonymous: anonymous,
     });
     setBusy(false);
     if (err) return setError(err.message);
@@ -38,6 +43,7 @@ export default function ReviewBox({
     <form onSubmit={submit} className="space-y-3 rounded-xl bg-[#f7f3e8] p-4">
       <p className="font-semibold">{restaurantName} nasıldı?</p>
       <StarInput value={rating} onChange={setRating} />
+      <p className="text-xs text-gray-600">Parmağını yıldızların üzerinde kaydırarak da seçebilirsin.</p>
       <textarea
         className="input"
         rows={3}
@@ -50,9 +56,17 @@ export default function ReviewBox({
       <button className="btn btn-sm" disabled={busy}>
         {busy ? "Gönderiliyor..." : "Yorumu gönder"}
       </button>
-      <p className="text-xs text-gray-600">
-        Yorumun restoranın sayfasında adının ilk kısmıyla görünür.
-      </p>
+      <fieldset className="space-y-1 text-sm">
+        <legend className="mb-1 font-semibold">Yorumda nasıl görünsün?</legend>
+        <label className="flex items-center gap-2">
+          <input type="radio" checked={!anonymous} onChange={() => setAnonymous(false)} />
+          Adımla ({firstName})
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="radio" checked={anonymous} onChange={() => setAnonymous(true)} />
+          Anonim
+        </label>
+      </fieldset>
     </form>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 // Sadece gösterim: ★★★★☆
 export function Stars({ value, size = 16 }: { value: number; size?: number }) {
   const full = Math.round(value);
@@ -16,7 +18,7 @@ export function Stars({ value, size = 16 }: { value: number; size?: number }) {
   );
 }
 
-// Seçilebilir yıldızlar
+// Seçilebilir yıldızlar: dokunup parmağı kaydırarak puan seçilir (1-5)
 export function StarInput({
   value,
   onChange,
@@ -24,21 +26,50 @@ export function StarInput({
   value: number;
   onChange: (n: number) => void;
 }) {
+  const [active, setActive] = useState(false);
+
+  function fromPointer(e: React.PointerEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    const n = Math.min(5, Math.max(1, Math.ceil(ratio * 5)));
+    if (n !== value) onChange(n);
+  }
+
   return (
-    <div className="flex gap-1" role="radiogroup" aria-label="Puan">
+    <div
+      role="slider"
+      tabIndex={0}
+      aria-label="Puan"
+      aria-valuemin={1}
+      aria-valuemax={5}
+      aria-valuenow={value || undefined}
+      className="inline-flex w-full max-w-[260px] cursor-pointer select-none justify-between"
+      style={{ touchAction: "none" }}
+      onPointerDown={(e) => {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setActive(true);
+        fromPointer(e);
+      }}
+      onPointerMove={(e) => active && fromPointer(e)}
+      onPointerUp={() => setActive(false)}
+      onPointerCancel={() => setActive(false)}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") onChange(Math.min(5, (value || 0) + 1));
+        if (e.key === "ArrowLeft" || e.key === "ArrowDown") onChange(Math.max(1, (value || 2) - 1));
+      }}
+    >
       {[1, 2, 3, 4, 5].map((n) => (
-        <button
+        <span
           key={n}
-          type="button"
-          role="radio"
-          aria-checked={value === n}
-          aria-label={`${n} yıldız`}
-          onClick={() => onChange(n)}
-          className="text-3xl leading-none"
-          style={{ color: n <= value ? "#e0a200" : "#d6d1c0" }}
+          aria-hidden="true"
+          className="text-[44px] leading-none transition-transform"
+          style={{
+            color: n <= value ? "#e0a200" : "#d6d1c0",
+            transform: active && n === value ? "scale(1.15)" : "scale(1)",
+          }}
         >
           ★
-        </button>
+        </span>
       ))}
     </div>
   );

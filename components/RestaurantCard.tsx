@@ -1,8 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import Link from "next/link";
 import { RatingBadge } from "@/components/Stars";
 import { hm, istDate, toDate } from "@/lib/time";
 import type { PublicSlot } from "@/components/SlotCard";
+import HeartButton from "@/components/HeartButton";
 
 export type RestaurantGroup = {
   id: string;
@@ -56,10 +59,14 @@ export default function RestaurantCard({
   group: g,
   now,
   href,
+  favorite,
+  onToggleFavorite,
 }: {
   group: RestaurantGroup;
   now: Date;
   href: string;
+  favorite?: boolean;
+  onToggleFavorite?: () => void;
 }) {
   const next = g.slots[0];
   const maxDiscount = Math.max(...g.slots.map((s) => s.discount_percent));
@@ -79,6 +86,13 @@ export default function RestaurantCard({
           />
         ) : (
           <img src="/img/pasta.webp" alt="" className="absolute inset-0 m-auto h-24 w-auto opacity-90" />
+        )}
+        {onToggleFavorite && (
+          <HeartButton
+            active={!!favorite}
+            onToggle={onToggleFavorite}
+            className="absolute right-3 top-3"
+          />
         )}
       </div>
       <div className="p-4">

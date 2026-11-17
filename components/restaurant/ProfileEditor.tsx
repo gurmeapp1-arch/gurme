@@ -7,6 +7,7 @@ import { isValidPhone } from "@/lib/roles";
 import type { Restaurant } from "@/lib/types";
 import ImageUpload from "@/components/ImageUpload";
 import { CATEGORIES } from "@/lib/categories";
+import GalleryEditor from "@/components/restaurant/GalleryEditor";
 
 export default function ProfileEditor({
   restaurant,
@@ -18,6 +19,9 @@ export default function ProfileEditor({
   const [description, setDescription] = useState(restaurant.description ?? "");
   const [phone, setPhone] = useState(restaurant.phone ?? "");
   const [address, setAddress] = useState(restaurant.address ?? "");
+  const [hours, setHours] = useState(restaurant.hours ?? "");
+  const [instagram, setInstagram] = useState(restaurant.instagram ?? "");
+  const [menuUrl, setMenuUrl] = useState(restaurant.menu_url ?? "");
   const [category, setCategory] = useState(restaurant.category ?? "Restoran");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -40,6 +44,13 @@ export default function ProfileEditor({
     if (phone.trim() && !isValidPhone(phone))
       return setMsg({ ok: false, text: "Geçerli bir telefon numarası yaz (örn. 0532 123 45 67)." });
 
+    const ig = instagram.trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/\/.*$/, "");
+    if (ig && !/^[A-Za-z0-9._]{1,30}$/.test(ig))
+      return setMsg({ ok: false, text: "Instagram kullanıcı adı geçersiz (örn. gurmekafe)." });
+    const menu = menuUrl.trim();
+    if (menu && !/^https?:\/\//.test(menu))
+      return setMsg({ ok: false, text: "Menü bağlantısı http:// ya da https:// ile başlamalı." });
+
     setBusy(true);
     const { error } = await supabase
       .from("restaurants")
@@ -48,6 +59,9 @@ export default function ProfileEditor({
         phone: phone.trim() || null,
         address: address.trim() || null,
         category,
+        hours: hours.trim() || null,
+        instagram: ig || null,
+        menu_url: menu || null,
       })
       .eq("id", restaurant.id);
     setBusy(false);
@@ -87,6 +101,8 @@ export default function ProfileEditor({
           onSaved={(url) => saveImage("logo", url)}
         />
       </div>
+
+      <GalleryEditor restaurantId={restaurant.id} />
 
       <form onSubmit={saveText} className="space-y-4">
         <div>
@@ -128,6 +144,39 @@ export default function ProfileEditor({
           <div>
             <label className="label">Adres</label>
             <input className="input" value={address} onChange={(e) => setAddress(e.target.value)} />
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Çalışma saatleri</label>
+          <textarea
+            className="input"
+            rows={2}
+            maxLength={300}
+            placeholder={"Hafta içi 09:00–22:00\nCumartesi-Pazar 10:00–23:00"}
+            value={hours}
+            onChange={(e) => setHours(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">Instagram kullanıcı adı</label>
+            <input
+              className="input"
+              placeholder="gurmekafe"
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label">Menü bağlantısı</label>
+            <input
+              className="input"
+              type="url"
+              placeholder="https://..."
+              value={menuUrl}
+              onChange={(e) => setMenuUrl(e.target.value)}
+            />
           </div>
         </div>
 

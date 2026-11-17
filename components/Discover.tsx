@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
 import type { PublicSlot } from "@/components/SlotCard";
 import { lastVisibleDate } from "@/lib/time";
+import { useFavorites } from "@/lib/useFavorites";
 import RestaurantCard, { dayLabel, groupByRestaurant } from "@/components/RestaurantCard";
 
 // Gün içi zaman dilimleri (saat olarak)
@@ -33,6 +34,8 @@ export default function Discover() {
   const [day, setDay] = useState("all");
   const [part, setPart] = useState("all");
   const [category, setCategory] = useState("all");
+  const [favOnly, setFavOnly] = useState(false);
+  const fav = useFavorites();
 
   useEffect(() => {
     // Dünden itibaren olan slotları çek (saat dilimi farkı payı), listeyi sonra süzeriz
@@ -77,6 +80,7 @@ export default function Discover() {
         .sort()
         .slice(0, 8)
     : [];
+  if (favOnly) list = list.filter((s) => fav.ids.has(s.restaurant_id));
   if (category !== "all") list = list.filter((s) => s.category === category);
   if (day !== "all") list = list.filter((s) => s.slot_date === day);
   const categoryOptions = [...new Set(slots.map((s) => s.category).filter(Boolean))] as string[];
@@ -118,6 +122,19 @@ export default function Discover() {
           ))}
         </select>
       </div>
+
+      {fav.ids.size > 0 && (
+        <button
+          onClick={() => setFavOnly((v) => !v)}
+          className={`rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ${
+            favOnly
+              ? "bg-[#d6336c] text-white ring-[#d6336c]"
+              : "bg-white text-gray-800 ring-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          ♥ Favorilerim ({fav.ids.size})
+        </button>
+      )}
 
       {categoryOptions.length > 1 && (
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
@@ -198,6 +215,8 @@ export default function Discover() {
               group={g}
               now={now!}
               href={`/rezervasyon/restoran/${g.id}${day !== "all" ? `?gun=${day}` : ""}`}
+              favorite={fav.ids.has(g.id)}
+              onToggleFavorite={() => fav.toggle(g.id)}
             />
           ))}
         </div>

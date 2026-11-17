@@ -31,7 +31,7 @@ export async function compressImage(file: File, maxSize = 1280, quality = 0.82):
 
 export async function uploadRestaurantImage(
   restaurantId: string,
-  kind: "cover" | "logo",
+  kind: "cover" | "logo" | "gallery",
   file: File
 ): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("Lütfen bir görsel dosyası seç.");

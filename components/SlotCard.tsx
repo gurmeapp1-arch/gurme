@@ -21,6 +21,9 @@ export type PublicSlot = {
   avg_rating: number | null;
   review_count: number | null;
   category?: string | null;
+  hours?: string | null;
+  instagram?: string | null;
+  menu_url?: string | null;
 };
 
 // Masa kartı: hem giriş yapmış müşteri listesinde hem karşılama sayfasında kullanılır

@@ -11,6 +11,8 @@ import { RatingBadge, Stars } from "@/components/Stars";
 import { PageSpinner } from "@/components/RoleGuard";
 import { dayLabel } from "@/components/RestaurantCard";
 import type { PublicSlot } from "@/components/SlotCard";
+import HeartButton from "@/components/HeartButton";
+import { useFavorites } from "@/lib/useFavorites";
 
 type ReviewRow = {
   id: string;
@@ -26,6 +28,8 @@ function RestoranSayfasi() {
   const [slots, setSlots] = useState<PublicSlot[] | null>(null);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [day, setDay] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const fav = useFavorites();
 
   useEffect(() => {
     // Listede bir gün filtresi seçiliyse o günle aç (?gun=2026-11-20)
@@ -38,6 +42,14 @@ function RestoranSayfasi() {
       .eq("restaurant_id", restaurantId)
       .gte("slot_date", from)
       .then(({ data }) => setSlots((data ?? []) as PublicSlot[]));
+    supabase
+      .from("restaurant_photos")
+      .select("url")
+      .eq("restaurant_id", restaurantId)
+      .order("created_at")
+      .then(({ data, error }) => {
+        if (!error) setPhotos((data ?? []).map((p: { url: string }) => p.url));
+      });
     supabase
       .from("reviews_public")
       .select("id, rating, comment, created_at, reviewer_name")
@@ -86,20 +98,82 @@ function RestoranSayfasi() {
             {info.logo_url && (
               <img src={info.logo_url} alt="" className="h-12 w-12 rounded-full object-cover" />
             )}
-            <div>
+            <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-extrabold leading-tight">{info.restaurant_name}</h1>
               <p className="text-sm text-gray-500">
                 {info.district}
                 {info.address ? ` · ${info.address}` : ""}
               </p>
             </div>
+            {fav.enabled && (
+              <HeartButton
+                active={fav.ids.has(info.restaurant_id)}
+                onToggle={() => fav.toggle(info.restaurant_id)}
+                className="shrink-0 ring-1 ring-gray-200"
+              />
+            )}
           </div>
           <div className="mt-2">
             <RatingBadge avg={info.avg_rating} count={info.review_count} />
           </div>
           {info.description && <p className="mt-3 text-gray-700">{info.description}</p>}
+
+          {(info.hours || info.instagram || info.menu_url) && (
+            <dl className="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm">
+              {info.hours && (
+                <div className="flex gap-3">
+                  <dt className="w-24 shrink-0 font-semibold text-gray-500">Çalışma saatleri</dt>
+                  <dd className="whitespace-pre-line text-gray-800">{info.hours}</dd>
+                </div>
+              )}
+              {info.instagram && (
+                <div className="flex gap-3">
+                  <dt className="w-24 shrink-0 font-semibold text-gray-500">Instagram</dt>
+                  <dd>
+                    <a
+                      href={`https://instagram.com/${info.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#14664a] underline"
+                    >
+                      @{info.instagram}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {info.menu_url && /^https?:\/\//.test(info.menu_url) && (
+                <div className="flex gap-3">
+                  <dt className="w-24 shrink-0 font-semibold text-gray-500">Menü</dt>
+                  <dd>
+                    <a
+                      href={info.menu_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#14664a] underline"
+                    >
+                      Menüyü gör
+                    </a>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          )}
         </div>
       </div>
+
+      {photos.length > 0 && (
+        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1">
+          {photos.map((u) => (
+            <img
+              key={u}
+              src={u}
+              alt=""
+              loading="lazy"
+              className="h-44 w-64 shrink-0 snap-start rounded-xl object-cover"
+            />
+          ))}
+        </div>
+      )}
 
       <section>
         <h2 className="text-xl font-extrabold text-gray-900">Gün ve saat seç</h2>

@@ -11,6 +11,9 @@ export type Restaurant = {
   cover_url: string | null;
   logo_url: string | null;
   category: string;
+  hours: string | null;
+  instagram: string | null;
+  menu_url: string | null;
 };
 
 export type Slot = {
