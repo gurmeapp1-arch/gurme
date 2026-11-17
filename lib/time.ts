@@ -25,7 +25,7 @@ export function addDays(date: string, n: number): string {
 }
 
 // Müşteriler en fazla bu kadar gün sonrasına kadar olan masaları görür (işletmeler daha ilerisini açabilir)
-export const MAX_DAYS_AHEAD = 7;
+export const MAX_DAYS_AHEAD = 2; // bugün dahil 3 gün
 export const lastVisibleDate = (now: Date): string =>
   addDays(istDate(now), MAX_DAYS_AHEAD);
 
