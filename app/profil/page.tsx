@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
@@ -82,6 +83,7 @@ export default function ProfilPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-6">
+      <BackButton fallback="/" />
       <h1 className="text-3xl font-extrabold text-[#0a4430]">Profilim</h1>
 
       <form onSubmit={saveProfile} className="card space-y-4">

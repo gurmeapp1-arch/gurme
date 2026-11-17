@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 export default function GizlilikPage() {
   return (
     <article className="mx-auto max-w-2xl space-y-6 text-gray-800">
+      <BackButton fallback="/" />
       <h1 className="text-3xl font-extrabold text-[#0a4430]">Gizlilik ve KVKK Aydınlatma Metni</h1>
 
       <section>

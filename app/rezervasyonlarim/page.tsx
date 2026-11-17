@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
@@ -243,6 +244,7 @@ export default function RezervasyonlarimPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallback="/" />
       <h1 className="font-display text-4xl font-extrabold text-[#0a4430]">Rezervasyonlarım</h1>
 
       {msg && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{msg}</p>}

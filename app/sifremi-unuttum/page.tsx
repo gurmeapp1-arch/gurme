@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -30,6 +31,7 @@ export default function SifremiUnuttumPage() {
 
   return (
     <div className="mx-auto max-w-md">
+      <BackButton fallback="/giris" />
       <h1 className="font-display mb-6 text-4xl font-extrabold text-[#0a4430]">Şifremi unuttum</h1>
 
       {sent ? (

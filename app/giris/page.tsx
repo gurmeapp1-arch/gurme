@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import BackButton from "@/components/BackButton";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -66,6 +67,7 @@ export default function GirisPage() {
 
   return (
     <div className="mx-auto max-w-md">
+      <BackButton fallback="/" />
       <h1 className="font-display mb-6 text-4xl font-extrabold text-[#0a4430]">Tekrar hoş geldin</h1>
 
       <form onSubmit={submit} className="card space-y-4">

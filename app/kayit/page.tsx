@@ -1,6 +1,7 @@
 "use client";
 
 import { readSource } from "@/lib/source";
+import BackButton from "@/components/BackButton";
 import { CATEGORIES } from "@/lib/categories";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -116,6 +117,7 @@ export default function KayitPage() {
 
   return (
     <div className="mx-auto max-w-md">
+      <BackButton fallback="/" />
       <h1 className="mb-6 text-3xl font-extrabold text-[#0a4430]">Aramıza katıl</h1>
 
       <div className="mb-4 grid grid-cols-2 gap-2">
