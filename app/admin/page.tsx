@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
+import { downloadCsv } from "@/lib/csv";
 import { useNow } from "@/lib/useNow";
 
 type Status = "confirmed" | "cancelled" | "attended" | "no_show";
@@ -296,6 +297,40 @@ export default function AdminPage() {
             <p className="mt-2 text-xs text-gray-500">
               QR ve gruplarda <code>?kaynak=isim</code> ekli bağlantı kullanırsan burada görünür.
             </p>
+          </div>
+
+          <div className="card">
+            <h2 className="mb-1 text-xl font-bold">Verileri indir (yedek)</h2>
+            <p className="mb-3 text-sm text-gray-600">
+              Excel'de açılabilen CSV dosyaları. Haftada bir indirip saklamanı öneririm. Rezervasyon listesi
+              son 1000 kaydı içerir.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="btn btn-sm"
+                onClick={() =>
+                  downloadCsv(
+                    "gurme-rezervasyonlar.csv",
+                    ["Kod", "Restoran", "Tarih", "Başlangıç", "Bitiş", "Kişi", "İndirim %", "Ad", "Telefon", "Durum", "Oluşturulma"],
+                    rows.map((r) => [
+                      r.code,
+                      r.slot.restaurant.name,
+                      r.slot.slot_date,
+                      hm(r.slot.start_time),
+                      hm(r.slot.end_time),
+                      r.party_size,
+                      r.slot.discount_percent,
+                      r.reservation_name,
+                      r.phone,
+                      STATUS_LABEL[r.status],
+                      r.created_at,
+                    ])
+                  )
+                }
+              >
+                Rezervasyonlar
+              </button>
+            </div>
           </div>
 
           <div className="card">
