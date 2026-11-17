@@ -427,3 +427,10 @@ input[type="time"].input {
     padding: 8px 10px;
   }
 }
+
+/* Sayfa hiçbir zaman yana kaymasın (taşan satırlar kendi içinde kayar) */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}

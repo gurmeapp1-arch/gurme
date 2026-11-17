@@ -32,7 +32,7 @@ export default function RootLayout({
       <body className={`${inter.className} ${display.variable} flex min-h-screen flex-col`}>
         <AuthProvider>
           <Header />
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+          <main className="mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-8">{children}</main>
           <footer className="px-4 py-6 text-center text-xs text-gray-500">
             Gurme · Okul projesi kapsamında yürütülen pilot çalışma ·{" "}
             <Link href="/gizlilik" className="underline">
