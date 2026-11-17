@@ -264,10 +264,15 @@ export default function RezervasyonlarimPage() {
       )}
 
       {past.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-xl font-bold">Geçmiş ve iptal edilenler</h2>
-          {past.map(renderRow)}
-        </section>
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl bg-white px-4 py-3 ring-1 ring-gray-200">
+            <span className="font-bold">Geçmiş ve iptal edilenler ({past.length})</span>
+            <span className="text-gray-500 transition group-open:rotate-180" aria-hidden>
+              ▾
+            </span>
+          </summary>
+          <div className="mt-3 space-y-3">{past.map(renderRow)}</div>
+        </details>
       )}
     </div>
   );
