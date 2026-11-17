@@ -1,5 +1,6 @@
 "use client";
 
+import CapacityBar from "@/components/CapacityBar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNow } from "@/lib/useNow";
@@ -348,6 +349,9 @@ export default function RestoranPage() {
                         <span className="text-gray-500">
                           %{sl.discount_percent} indirim · {people}/{sl.capacity} kişi
                         </span>
+                        <div className="w-full">
+                          <CapacityBar booked={people} capacity={sl.capacity} />
+                        </div>
                       </div>
                       <ul className="divide-y divide-gray-100">{rs.map((r) => renderRes(r))}</ul>
                     </div>
@@ -508,7 +512,6 @@ export default function RestoranPage() {
                           const booked = reservations
                             .filter((r) => r.slot_id === s.id && r.status !== "cancelled")
                             .reduce((n, r) => n + r.party_size, 0);
-                          const pct = Math.min(100, Math.round((booked / s.capacity) * 100));
                           return (
                             <li
                               key={s.id}
@@ -521,12 +524,7 @@ export default function RestoranPage() {
                                 <p className="text-sm text-gray-500">%{s.discount_percent} indirim</p>
                               </div>
                               <div className="flex-1 min-w-[120px]">
-                                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-                                  <div
-                                    className="h-full rounded-full bg-[#14664a]"
-                                    style={{ width: `${pct}%` }}
-                                  />
-                                </div>
+                                <CapacityBar booked={booked} capacity={s.capacity} />
                                 <p className="mt-1 text-xs text-gray-500">
                                   {booked}/{s.capacity} kişi
                                   {booked >= s.capacity ? " · dolu" : ""}

@@ -12,6 +12,7 @@ import { RatingBadge, Stars } from "@/components/Stars";
 import { PageSpinner } from "@/components/RoleGuard";
 import { dayLabel } from "@/components/RestaurantCard";
 import type { PublicSlot } from "@/components/SlotCard";
+import CapacityBar from "@/components/CapacityBar";
 import HeartButton from "@/components/HeartButton";
 import { useFavorites } from "@/lib/useFavorites";
 
@@ -206,11 +207,25 @@ function RestoranSayfasi() {
                       <p className="text-lg font-bold">
                         {hm(s.start_time)}–{hm(s.end_time)}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        {full
-                          ? "Dolu"
-                          : `${s.remaining} kişilik yer${started ? " · şu an açık" : ""}`}
-                      </p>
+                      <div className="mt-1.5 w-36">
+                        <CapacityBar booked={s.capacity - s.remaining} capacity={s.capacity} />
+                        <p
+                          className={`mt-1 text-xs ${
+                            full
+                              ? "text-gray-500"
+                              : s.remaining / s.capacity <= 0.2
+                                ? "font-bold text-red-600"
+                                : "text-gray-500"
+                          }`}
+                        >
+                          {full
+                            ? "Dolu"
+                            : s.remaining / s.capacity <= 0.2
+                              ? `Son ${s.remaining} yer!`
+                              : `${s.remaining} kişilik yer`}
+                          {!full && started ? " · şu an açık" : ""}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="rounded-full bg-[#dff3e6] px-3 py-1 text-sm font-bold text-[#0a4430]">
