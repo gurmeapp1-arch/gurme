@@ -4,7 +4,7 @@ import GuestOffers from "@/components/GuestOffers";
 import Faq from "@/components/Faq";
 
 const STEPS = [
-  { n: "1", title: "Bir masa seç", text: "Hangi gün, hangi saat, ne kadar indirim: hepsi kartta yazıyor." },
+  { n: "1", title: "Bir restoran seç", text: "Hangi gün, hangi saat, ne kadar indirim: hepsi kartta yazıyor." },
   { n: "2", title: "Adını yaz, kodunu al", text: "Kaç kişi geleceğini söylüyorsun, rezervasyon kodun hemen hazır." },
   { n: "3", title: "Hesapta kodu söyle", text: "Yemeğini ye, hesap gelince kodunu söyle, indirim yapsınlar." },
 ];
@@ -20,7 +20,7 @@ export default function Landing() {
             Sevdiğin yerlere indirimli rezervasyon.
           </h1>
           <p className="mt-4 max-w-lg text-lg text-gray-600">
-            Masanı ayır, hesap gelince kodunu söyle, indirimini al.
+            Yerini ayır, hesap gelince kodunu söyle, indirimini al.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-5">
             <Link href="/kayit" className="btn px-6 py-3">

@@ -11,7 +11,7 @@ type NavItem = { href: string; label: string };
 function navFor(role: string | undefined): NavItem[] {
   if (role === "diner")
     return [
-      { href: "/", label: "Masalar" },
+      { href: "/", label: "Restoran bul" },
       { href: "/rezervasyonlarim", label: "Rezervasyonlarım" },
       { href: "/profil", label: "Profilim" },
     ];

@@ -55,6 +55,7 @@ export default function RezervasyonlarimPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [reviewed, setReviewed] = useState<Record<string, number>>({});
   const [msg, setMsg] = useState("");
+  const [partyEdit, setPartyEdit] = useState<{ id: string; value: number } | null>(null);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -102,6 +103,18 @@ export default function RezervasyonlarimPage() {
     const { error } = await supabase.rpc("cancel_reservation", { p_id: id });
     if (error) setMsg(error.message);
     else load();
+  }
+
+  async function saveParty() {
+    if (!partyEdit) return;
+    setMsg("");
+    const { error } = await supabase.rpc("update_reservation_party", {
+      p_id: partyEdit.id,
+      p_party_size: partyEdit.value,
+    });
+    if (error) return setMsg(error.message);
+    setPartyEdit(null);
+    load();
   }
 
   if (loading) return <p>Yükleniyor...</p>;
@@ -216,6 +229,14 @@ export default function RezervasyonlarimPage() {
                 WhatsApp&apos;tan haber ver
               </a>
             )}
+            {canCancel && partyEdit?.id !== r.id && (
+              <button
+                onClick={() => setPartyEdit({ id: r.id, value: r.party_size })}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-[#0a4430] ring-1 ring-gray-300 hover:bg-gray-50"
+              >
+                Kişi sayısını değiştir
+              </button>
+            )}
             {canCancel && (
               <button
                 onClick={() => cancel(r.id)}
@@ -224,6 +245,32 @@ export default function RezervasyonlarimPage() {
                 Rezervasyonu iptal et
               </button>
             )}
+          </div>
+        )}
+        {partyEdit?.id === r.id && (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-gray-50 p-3">
+            <label className="text-sm font-semibold" htmlFor={`party-${r.id}`}>
+              Kişi sayısı
+            </label>
+            <select
+              id={`party-${r.id}`}
+              className="input"
+              style={{ width: "auto" }}
+              value={partyEdit.value}
+              onChange={(e) => setPartyEdit({ id: r.id, value: Number(e.target.value) })}
+            >
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n} kişi
+                </option>
+              ))}
+            </select>
+            <button onClick={saveParty} className="btn btn-sm">
+              Kaydet
+            </button>
+            <button onClick={() => setPartyEdit(null)} className="text-sm text-gray-600 underline">
+              Vazgeç
+            </button>
           </div>
         )}
         {tooLate && (
@@ -253,7 +300,7 @@ export default function RezervasyonlarimPage() {
       {rows.length === 0 && (
         <p className="text-gray-600">
           Henüz rezervasyonun yok.{" "}
-          <Link href="/" className="underline">İndirimli masalara göz at</Link>.
+          <Link href="/" className="underline">Restoranlara göz at</Link>.
         </p>
       )}
 

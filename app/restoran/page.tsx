@@ -166,6 +166,21 @@ export default function RestoranPage() {
     };
   }, [fresh.length]);
 
+  const [capEdit, setCapEdit] = useState<{ id: string; value: string; booked: number } | null>(null);
+
+  async function saveCapacity() {
+    if (!capEdit) return;
+    setMsg("");
+    const n = Number(capEdit.value);
+    if (!Number.isInteger(n) || n < 1) return setMsg("Kontenjan en az 1 kişi olmalı.");
+    if (n < capEdit.booked)
+      return setMsg(`Bu slotta zaten ${capEdit.booked} kişilik rezervasyon var, kontenjan bunun altına düşürülemez.`);
+    const { error } = await supabase.from("slots").update({ capacity: n }).eq("id", capEdit.id);
+    if (error) return setMsg(error.message);
+    setCapEdit(null);
+    loadAll();
+  }
+
   async function deleteSlot(id: string) {
     setMsg("");
     if (!confirm("Bu slot silinsin mi?")) return;
@@ -534,12 +549,40 @@ export default function RestoranPage() {
                                   {booked >= s.capacity ? " · dolu" : ""}
                                 </p>
                               </div>
-                              <button
-                                onClick={() => deleteSlot(s.id)}
-                                className="text-sm text-red-700 underline"
-                              >
-                                Sil
-                              </button>
+                              {capEdit?.id === s.id ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    min={Math.max(1, booked)}
+                                    className="input"
+                                    style={{ width: "5rem" }}
+                                    value={capEdit.value}
+                                    onChange={(e) => setCapEdit({ ...capEdit, value: e.target.value })}
+                                    aria-label="Yeni kontenjan"
+                                  />
+                                  <button onClick={saveCapacity} className="btn btn-sm">
+                                    Kaydet
+                                  </button>
+                                  <button onClick={() => setCapEdit(null)} className="text-sm text-gray-600 underline">
+                                    Vazgeç
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-4">
+                                  <button
+                                    onClick={() => setCapEdit({ id: s.id, value: String(s.capacity), booked })}
+                                    className="text-sm text-[#14664a] underline"
+                                  >
+                                    Kontenjanı düzenle
+                                  </button>
+                                  <button
+                                    onClick={() => deleteSlot(s.id)}
+                                    className="text-sm text-red-700 underline"
+                                  >
+                                    Sil
+                                  </button>
+                                </div>
+                              )}
                             </li>
                           );
                         })}

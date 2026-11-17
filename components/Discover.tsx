@@ -94,8 +94,8 @@ export default function Discover() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-[#0a4430]">İndirimli masalar</h1>
-        <p className="mt-1 text-gray-600">Beğendiğin masaya dokun, yerini ayır.</p>
+        <h1 className="text-3xl font-extrabold text-[#0a4430]">Restoran bul</h1>
+        <p className="mt-1 text-gray-600">Beğendiğin restorana dokun, yerini ayır.</p>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -200,7 +200,7 @@ export default function Discover() {
 
       {ready && list.length === 0 && !error && (
         <div className="card text-center">
-          <p className="font-semibold">Şu an uygun indirimli masa yok.</p>
+          <p className="font-semibold">Şu an uygun indirimli restoran yok.</p>
           <p className="mt-1 text-sm text-gray-600">
             Filtreleri değiştir ya da daha sonra tekrar bak, restoranlar yeni slot açıyor.
           </p>
