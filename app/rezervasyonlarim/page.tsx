@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { useNow } from "@/lib/useNow";
 import { Stars } from "@/components/Stars";
+import ConfirmButton from "@/components/ConfirmButton";
 import ReviewBox from "@/components/ReviewBox";
 import { buildIcs, downloadIcs } from "@/lib/ics";
 import { toWhatsAppNumber, whatsAppLink } from "@/lib/config";
@@ -55,6 +56,7 @@ export default function RezervasyonlarimPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [reviewed, setReviewed] = useState<Record<string, number>>({});
   const [msg, setMsg] = useState("");
+  const [rowMsg, setRowMsg] = useState<{ id: string; text: string } | null>(null);
   const [partyEdit, setPartyEdit] = useState<{ id: string; value: number } | null>(null);
 
   const load = useCallback(async () => {
@@ -98,21 +100,20 @@ export default function RezervasyonlarimPage() {
   }, [load]);
 
   async function cancel(id: string) {
-    setMsg("");
-    if (!confirm("Rezervasyonu iptal etmek istediğine emin misin?")) return;
+    setRowMsg(null);
     const { error } = await supabase.rpc("cancel_reservation", { p_id: id });
-    if (error) setMsg(error.message);
+    if (error) setRowMsg({ id, text: error.message });
     else load();
   }
 
   async function saveParty() {
     if (!partyEdit) return;
-    setMsg("");
+    setRowMsg(null);
     const { error } = await supabase.rpc("update_reservation_party", {
       p_id: partyEdit.id,
       p_party_size: partyEdit.value,
     });
-    if (error) return setMsg(error.message);
+    if (error) return setRowMsg({ id: partyEdit.id, text: error.message });
     setPartyEdit(null);
     load();
   }
@@ -238,12 +239,13 @@ export default function RezervasyonlarimPage() {
               </button>
             )}
             {canCancel && (
-              <button
-                onClick={() => cancel(r.id)}
+              <ConfirmButton
+                label="Rezervasyonu iptal et"
+                question="İptal edilsin mi?"
+                confirmLabel="Evet, iptal et"
+                onConfirm={() => cancel(r.id)}
                 className="rounded-full px-4 py-2 text-sm font-semibold text-red-700 ring-1 ring-red-300 hover:bg-red-50"
-              >
-                Rezervasyonu iptal et
-              </button>
+              />
             )}
           </div>
         )}
@@ -272,6 +274,9 @@ export default function RezervasyonlarimPage() {
               Vazgeç
             </button>
           </div>
+        )}
+        {rowMsg?.id === r.id && (
+          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{rowMsg.text}</p>
         )}
         {tooLate && (
           <p className="text-sm text-gray-600">

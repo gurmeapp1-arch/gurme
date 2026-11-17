@@ -204,14 +204,16 @@ export default function SlotForm({
         </label>
         {steps && (
           <p className="mt-2 text-xs text-gray-600">
-            Sen sadece başlangıç indirimini yaz, gerisini biz yaparız. Saat yaklaştıkça indirim kendiliğinden
-            azalır
+            Sen sadece başlangıç indirimini yaz, gerisini biz yaparız. İndirim slota yaklaştıkça iki kez düşer
+            ve saatleri sabittir: slota 48 saatten fazla varken yazdığın oran, 24-48 saat kala biraz daha az,
+            son 24 saatte en düşük oran geçerli olur.
             {Number(form.discount_percent) >= 5 &&
-              ` (örn. ${(() => {
+              (() => {
                 const t = autoSteps(Number(form.discount_percent), 72);
-                return `%${t.far} → %${t.mid} → %${t.base}`;
-              })()})`}
-            . Erken ayıran müşteri daha yüksek indirimi kilitler.
+                return ` Örnek: %${t.far} → %${t.mid} → %${t.base}.`;
+              })()}{" "}
+            Slotu yakın bir güne açarsan sadece kalan basamaklar uygulanır. Rezervasyon yapan müşteri,
+            yaptığı andaki oranı alır.
           </p>
         )}
       </div>

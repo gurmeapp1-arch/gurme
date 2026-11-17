@@ -1,6 +1,7 @@
 "use client";
 
 import { stepsText } from "@/lib/discount";
+import ConfirmButton from "@/components/ConfirmButton";
 import CapacityBar from "@/components/CapacityBar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -166,26 +167,30 @@ export default function RestoranPage() {
     };
   }, [fresh.length]);
 
+  const [capError, setCapError] = useState<{ id: string; text: string } | null>(null);
   const [capEdit, setCapEdit] = useState<{ id: string; value: string; booked: number } | null>(null);
 
   async function saveCapacity() {
     if (!capEdit) return;
-    setMsg("");
+    const id = capEdit.id;
+    setCapError(null);
     const n = Number(capEdit.value);
-    if (!Number.isInteger(n) || n < 1) return setMsg("Kontenjan en az 1 kişi olmalı.");
+    if (!Number.isInteger(n) || n < 1) return setCapError({ id, text: "Kontenjan en az 1 kişi olmalı." });
     if (n < capEdit.booked)
-      return setMsg(`Bu slotta zaten ${capEdit.booked} kişilik rezervasyon var, kontenjan bunun altına düşürülemez.`);
-    const { error } = await supabase.from("slots").update({ capacity: n }).eq("id", capEdit.id);
-    if (error) return setMsg(error.message);
+      return setCapError({
+        id,
+        text: `Bu slotta zaten ${capEdit.booked} kişilik rezervasyon var, kontenjan bunun altına düşürülemez.`,
+      });
+    const { error } = await supabase.from("slots").update({ capacity: n }).eq("id", id);
+    if (error) return setCapError({ id, text: error.message });
     setCapEdit(null);
     loadAll();
   }
 
   async function deleteSlot(id: string) {
-    setMsg("");
-    if (!confirm("Bu slot silinsin mi?")) return;
+    setCapError(null);
     const { error } = await supabase.from("slots").delete().eq("id", id);
-    if (error) setMsg("Rezervasyonu olan slot silinemez.");
+    if (error) setCapError({ id, text: "Rezervasyonu olan slot silinemez." });
     else loadAll();
   }
 
@@ -549,8 +554,9 @@ export default function RestoranPage() {
                                   {booked >= s.capacity ? " · dolu" : ""}
                                 </p>
                               </div>
+                              <div className="w-full">
                               {capEdit?.id === s.id ? (
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <input
                                     type="number"
                                     min={Math.max(1, booked)}
@@ -575,14 +581,18 @@ export default function RestoranPage() {
                                   >
                                     Kontenjanı düzenle
                                   </button>
-                                  <button
-                                    onClick={() => deleteSlot(s.id)}
+                                  <ConfirmButton
+                                    label="Sil"
+                                    question="Slot silinsin mi?"
+                                    onConfirm={() => deleteSlot(s.id)}
                                     className="text-sm text-red-700 underline"
-                                  >
-                                    Sil
-                                  </button>
+                                  />
                                 </div>
                               )}
+                              {capError?.id === s.id && (
+                                <p className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-700">{capError.text}</p>
+                              )}
+                              </div>
                             </li>
                           );
                         })}

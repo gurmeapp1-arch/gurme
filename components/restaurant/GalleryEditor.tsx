@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ConfirmButton from "@/components/ConfirmButton";
 import { supabase } from "@/lib/supabase";
 import { removeImageByUrl, uploadRestaurantImage } from "@/lib/image";
 
@@ -58,7 +59,6 @@ export default function GalleryEditor({ restaurantId }: { restaurantId: string }
   }
 
   async function remove(p: Photo) {
-    if (!confirm("Bu fotoğraf silinsin mi?")) return;
     const { error: err } = await supabase.from("restaurant_photos").delete().eq("id", p.id);
     if (err) return setError(err.message);
     await removeImageByUrl(p.url);
@@ -78,14 +78,15 @@ export default function GalleryEditor({ restaurantId }: { restaurantId: string }
           <div key={p.id} className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.url} alt="" className="h-24 w-32 rounded-lg object-cover" />
-            <button
-              type="button"
-              onClick={() => remove(p)}
-              aria-label="Fotoğrafı sil"
-              className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white"
-            >
-              ✕
-            </button>
+            <div className="absolute right-1 top-1 rounded-full bg-black/70 px-1 py-0.5 text-white">
+              <ConfirmButton
+                label="✕"
+                question="Silinsin mi?"
+                confirmLabel="Sil"
+                onConfirm={() => remove(p)}
+                className="grid h-7 w-7 place-items-center text-sm"
+              />
+            </div>
           </div>
         ))}
         {photos.length < MAX && (
