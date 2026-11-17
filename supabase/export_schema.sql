@@ -32,19 +32,21 @@ with parts as (
 
   union all
   -- 2) Birincil anahtar, benzersiz ve kontrol kuralları
-  select 2, conrelid::regclass::text,
-    'alter table ' || conrelid::regclass || ' add constraint ' || quote_ident(conname)
-      || ' ' || pg_get_constraintdef(oid) || ';'
-  from pg_constraint
-  where connamespace = 'public'::regnamespace and contype in ('p', 'u', 'c')
+  select 2, k.relname::text,
+    'alter table public.' || quote_ident(k.relname) || ' add constraint ' || quote_ident(o.conname)
+      || ' ' || pg_get_constraintdef(o.oid) || ';'
+  from pg_constraint o
+  join pg_class k on k.oid = o.conrelid
+  where o.connamespace = (select oid from pg_namespace where nspname = 'public') and o.contype in ('p', 'u', 'c')
 
   union all
   -- 3) Yabancı anahtarlar
-  select 3, conrelid::regclass::text,
-    'alter table ' || conrelid::regclass || ' add constraint ' || quote_ident(conname)
-      || ' ' || pg_get_constraintdef(oid) || ';'
-  from pg_constraint
-  where connamespace = 'public'::regnamespace and contype = 'f'
+  select 3, k.relname::text,
+    'alter table public.' || quote_ident(k.relname) || ' add constraint ' || quote_ident(o.conname)
+      || ' ' || pg_get_constraintdef(o.oid) || ';'
+  from pg_constraint o
+  join pg_class k on k.oid = o.conrelid
+  where o.connamespace = (select oid from pg_namespace where nspname = 'public') and o.contype = 'f'
 
   union all
   -- 4) Dizinler (kural kaynaklı olanlar hariç)
@@ -57,7 +59,7 @@ with parts as (
   -- 5) Fonksiyonlar
   select 5, p.proname::text, pg_get_functiondef(p.oid) || ';'
   from pg_proc p
-  where p.pronamespace = 'public'::regnamespace and p.prokind = 'f'
+  where p.pronamespace = (select oid from pg_namespace where nspname = 'public') and p.prokind = 'f'
 
   union all
   -- 6) Görünümler
@@ -117,11 +119,11 @@ with parts as (
 
   union all
   -- 12) Fotoğraf deposu (bucket) ayarları
-  select 12, id::text,
+  select 12, b.id::text,
     format(
       'insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types) values (%L, %L, %L, %L, %L) on conflict (id) do nothing;',
-      id, name, public, file_size_limit, allowed_mime_types)
-  from storage.buckets
+      b.id, b.name, b."public", b.file_size_limit, b.allowed_mime_types)
+  from storage.buckets b
 )
 select row_number() over (order by ord, name, stmt) as n, stmt
 from parts
