@@ -1,5 +1,5 @@
 // Excel (Türkçe) için ; ayraçlı, BOM'lu CSV indirir
-export function downloadCsv(filename: string, header: string[], rows: (string | number | null | undefined)[][]) {
+export function saveCsv(filename: string, header: string[], rows: (string | number | null | undefined)[][]) {
   const esc = (v: string | number | null | undefined) => {
     let s = v == null ? "" : String(v);
     // Formül enjeksiyonunu önle (=, +, -, @ ile başlayan metinler)

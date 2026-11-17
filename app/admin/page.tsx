@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
-import { downloadCsv } from "@/lib/csv";
+import { saveCsv } from "@/lib/csv";
 import { useNow } from "@/lib/useNow";
 
 type Status = "confirmed" | "cancelled" | "attended" | "no_show";
@@ -309,7 +309,7 @@ export default function AdminPage() {
               <button
                 className="btn btn-sm"
                 onClick={() =>
-                  downloadCsv(
+                  saveCsv(
                     "gurme-rezervasyonlar.csv",
                     ["Kod", "Restoran", "Tarih", "Başlangıç", "Bitiş", "Kişi", "İndirim %", "Ad", "Telefon", "Durum", "Oluşturulma"],
                     rows.map((r) => [
@@ -329,6 +329,47 @@ export default function AdminPage() {
                 }
               >
                 Rezervasyonlar
+              </button>
+              <button
+                className="btn btn-sm"
+                onClick={() =>
+                  saveCsv(
+                    "gurme-restoranlar.csv",
+                    ["Ad", "Tür", "Semt", "Adres", "Telefon", "Instagram", "Onaylı", "Kayıt"],
+                    restaurants.map((r) => [
+                      r.name, r.category, r.district, r.address, r.phone, r.instagram,
+                      r.approved ? "evet" : "hayır", r.created_at,
+                    ])
+                  )
+                }
+              >
+                Restoranlar
+              </button>
+              <button
+                className="btn btn-sm"
+                onClick={() =>
+                  saveCsv(
+                    "gurme-kullanicilar.csv",
+                    ["Ad", "E-posta", "Telefon", "Rol", "İşletme", "Gelmeme sayısı", "Kayıt"],
+                    users.map((u) => [
+                      u.full_name, u.email, u.phone, u.role, u.restaurant_name, u.no_show_count ?? 0, u.created_at,
+                    ])
+                  )
+                }
+              >
+                Kullanıcılar
+              </button>
+              <button
+                className="btn btn-sm"
+                onClick={() =>
+                  saveCsv(
+                    "gurme-yorumlar.csv",
+                    ["Restoran", "Puan", "Yorum", "Tarih"],
+                    reviews.map((r) => [r.restaurant?.name, r.rating, r.comment, r.created_at])
+                  )
+                }
+              >
+                Yorumlar
               </button>
             </div>
           </div>
