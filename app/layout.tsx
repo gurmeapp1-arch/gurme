@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import SupportButton from "@/components/SupportButton";
 import SourceCapture from "@/components/SourceCapture";
 import Link from "next/link";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -39,7 +40,9 @@ export default function RootLayout({
               Gizlilik ve KVKK
             </Link>
           </footer>
-          <SupportButton />
+          <Suspense fallback={null}>
+            <SupportButton />
+          </Suspense>
           <SourceCapture />
         </AuthProvider>
       </body>
