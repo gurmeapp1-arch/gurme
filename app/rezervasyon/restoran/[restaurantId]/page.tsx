@@ -13,6 +13,7 @@ import { PageSpinner } from "@/components/RoleGuard";
 import { dayLabel } from "@/components/RestaurantCard";
 import type { PublicSlot } from "@/components/SlotCard";
 import CapacityBar from "@/components/CapacityBar";
+import { nextChangeText } from "@/lib/discount";
 import HeartButton from "@/components/HeartButton";
 import { useFavorites } from "@/lib/useFavorites";
 
@@ -228,9 +229,16 @@ function RestoranSayfasi() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-[#dff3e6] px-3 py-1 text-sm font-bold text-[#0a4430]">
-                        %{s.discount_percent}
-                      </span>
+                      <div className="text-right">
+                        <span className="rounded-full bg-[#dff3e6] px-3 py-1 text-sm font-bold text-[#0a4430]">
+                          %{s.discount_percent}
+                        </span>
+                        {nextChangeText(s.next_discount, s.next_change_at) && (
+                          <p className="mt-1 text-[11px] text-amber-700">
+                            {nextChangeText(s.next_discount, s.next_change_at)}
+                          </p>
+                        )}
+                      </div>
                       {full ? (
                         <span className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-400">
                           Dolu

@@ -1,5 +1,6 @@
 "use client";
 
+import { stepsText } from "@/lib/discount";
 import CapacityBar from "@/components/CapacityBar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -85,7 +86,7 @@ export default function RestoranPage() {
     const from = istDate(new Date(Date.now() - 45 * 86400000));
     const { data: s } = await supabase
       .from("slots")
-      .select("id, slot_date, start_time, end_time, discount_percent, capacity")
+      .select("id, slot_date, start_time, end_time, discount_percent, discount_far, discount_mid, capacity")
       .eq("restaurant_id", rest.id)
       .gte("slot_date", from)
       .order("slot_date")
@@ -97,7 +98,7 @@ export default function RestoranPage() {
     if (slotList.length > 0) {
       const { data: rv } = await supabase
         .from("reservations")
-        .select("id, code, slot_id, party_size, reservation_name, phone, status")
+        .select("id, code, slot_id, party_size, discount_percent, reservation_name, phone, status")
         .in("slot_id", slotList.map((x) => x.id))
         .order("created_at");
       rvList = (rv ?? []) as Reservation[];
@@ -255,7 +256,7 @@ export default function RestoranPage() {
           </p>
           {withDate && (
             <p className="text-sm text-gray-500">
-              {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)} · %{s.discount_percent}
+              {fmtDate(s.slot_date)} · {hm(s.start_time)}–{hm(s.end_time)} · %{r.discount_percent ?? s.discount_percent}
             </p>
           )}
           <p className="mt-0.5 text-sm">
@@ -295,6 +296,9 @@ export default function RestoranPage() {
         <div className="flex items-center gap-2">
           <span className="rounded-lg bg-gray-100 px-2.5 py-1 font-mono text-sm font-bold tracking-wide">
             {r.code}
+          </span>
+          <span className="rounded-full bg-[#dff3e6] px-2.5 py-1 text-xs font-bold text-[#0a4430]">
+            %{r.discount_percent ?? s.discount_percent}
           </span>
           {cancelled || r.status === "attended" || r.status === "no_show" ? (
             <span className="text-sm font-semibold text-gray-600">{STATUS_LABEL[r.status]}</span>
@@ -347,7 +351,7 @@ export default function RestoranPage() {
                           {hm(sl.start_time)}–{hm(sl.end_time)}
                         </span>
                         <span className="text-gray-500">
-                          %{sl.discount_percent} indirim · {people}/{sl.capacity} kişi
+                          {stepsText(sl)} indirim · {people}/{sl.capacity} kişi
                         </span>
                         <div className="w-full">
                           <CapacityBar booked={people} capacity={sl.capacity} />
@@ -521,7 +525,7 @@ export default function RestoranPage() {
                                 <p className="text-lg font-bold">
                                   {hm(s.start_time)}–{hm(s.end_time)}
                                 </p>
-                                <p className="text-sm text-gray-500">%{s.discount_percent} indirim</p>
+                                <p className="text-sm text-gray-500">{stepsText(s)} indirim</p>
                               </div>
                               <div className="flex-1 min-w-[120px]">
                                 <CapacityBar booked={booked} capacity={s.capacity} />

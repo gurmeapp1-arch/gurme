@@ -14,6 +14,8 @@ export type PublicSlot = {
   start_time: string;
   end_time: string;
   discount_percent: number;
+  next_discount?: number | null;
+  next_change_at?: string | null;
   capacity: number;
   remaining: number;
   cover_url: string | null;

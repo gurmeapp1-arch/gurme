@@ -1,5 +1,6 @@
 "use client";
 
+import { nextChangeText } from "@/lib/discount";
 import BackButton from "@/components/BackButton";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -33,6 +34,8 @@ type PublicSlot = {
   start_time: string;
   end_time: string;
   discount_percent: number;
+  next_discount?: number | null;
+  next_change_at?: string | null;
   remaining: number;
 };
 
@@ -161,6 +164,11 @@ function RezervasyonForm() {
             %{slot.discount_percent} indirim
           </span>
         </p>
+        {nextChangeText(slot.next_discount, slot.next_change_at) && (
+          <p className="mt-2 text-sm text-amber-700">
+            {nextChangeText(slot.next_discount, slot.next_change_at)}. Şimdi ayırırsan bu indirim sana kilitlenir.
+          </p>
+        )}
         <p className="mt-3 text-sm text-gray-600">
           Bu saatler içinde istediğin zaman gelebilirsin. İndirim, ödeme sırasında
           restoranda kodunla uygulanır.

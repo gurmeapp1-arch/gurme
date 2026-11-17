@@ -22,6 +22,8 @@ export type Slot = {
   start_time: string;
   end_time: string;
   discount_percent: number;
+  discount_far?: number | null;
+  discount_mid?: number | null;
   capacity: number;
 };
 
@@ -30,6 +32,7 @@ export type Reservation = {
   code: string;
   slot_id: string;
   party_size: number;
+  discount_percent?: number | null;
   reservation_name: string;
   phone: string;
   status: Status;

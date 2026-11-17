@@ -18,6 +18,7 @@ type Row = {
   party_size: number;
   reservation_name: string;
   status: Status;
+  discount_percent: number | null;
   slot: {
     slot_date: string;
     start_time: string;
@@ -60,7 +61,7 @@ export default function RezervasyonlarimPage() {
     const { data, error } = await supabase
       .from("reservations")
       .select(
-        "id, code, party_size, reservation_name, status, slot:slots(slot_date, start_time, end_time, discount_percent, restaurant:restaurants(name, district, address, phone))"
+        "id, code, party_size, reservation_name, status, discount_percent, slot:slots(slot_date, start_time, end_time, discount_percent, restaurant:restaurants(name, district, address, phone))"
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -149,7 +150,7 @@ export default function RezervasyonlarimPage() {
 
         <p className="font-semibold">
           {fmtDate(r.slot.slot_date)} · {hm(r.slot.start_time)}–{hm(r.slot.end_time)} ·{" "}
-          {r.party_size} kişi · %{r.slot.discount_percent} indirim
+          {r.party_size} kişi · %{r.discount_percent ?? r.slot.discount_percent} indirim
         </p>
         <p className="text-sm text-gray-600">Rezervasyon adı: {r.reservation_name}</p>
 
@@ -189,7 +190,7 @@ export default function RezervasyonlarimPage() {
                     location: [r.slot.restaurant.name, r.slot.restaurant.address]
                       .filter(Boolean)
                       .join(", "),
-                    description: `Rezervasyon kodu: ${r.code}. ${r.reservation_name} adına, ${r.party_size} kişi. Hesapta kodu söyle, %${r.slot.discount_percent} indirim uygulansın.`,
+                    description: `Rezervasyon kodu: ${r.code}. ${r.reservation_name} adına, ${r.party_size} kişi. Hesapta kodu söyle, %${r.discount_percent ?? r.slot.discount_percent} indirim uygulansın.`,
                   })
                 )
               }

@@ -25,6 +25,9 @@ export default function SlotForm({
     discount_percent: "40",
     capacity: "20",
   });
+  const [steps, setSteps] = useState(false);
+  const [far, setFar] = useState("60");
+  const [mid, setMid] = useState("50");
   const [repeat, setRepeat] = useState(false);
   const [days, setDays] = useState<number[]>([]);
   const [weeks, setWeeks] = useState("4");
@@ -57,6 +60,17 @@ export default function SlotForm({
       return setMsg({ ok: false, text: "Bitiş saati, başlangıç saatinden sonra olmalı." });
     if (!(discount >= 5 && discount <= 70))
       return setMsg({ ok: false, text: "İndirim oranı %5 ile %70 arasında olmalı." });
+    const farN = Number(far);
+    const midN = Number(mid);
+    if (steps) {
+      if (!(farN >= 5 && farN <= 70 && midN >= 5 && midN <= 70))
+        return setMsg({ ok: false, text: "Basamak indirimleri %5 ile %70 arasında olmalı." });
+      if (!(farN >= midN && midN >= discount))
+        return setMsg({
+          ok: false,
+          text: "İndirim zamanla azalmalı: 2+ gün önce ≥ 1-2 gün önce ≥ son 24 saat.",
+        });
+    }
     if (!(capacity >= 1)) return setMsg({ ok: false, text: "Kontenjan en az 1 kişi olmalı." });
     if (repeat && days.length === 0)
       return setMsg({ ok: false, text: "Tekrar için en az bir gün seç." });
@@ -93,6 +107,8 @@ export default function SlotForm({
         start_time: form.start_time,
         end_time: form.end_time,
         discount_percent: discount,
+        discount_far: steps ? farN : null,
+        discount_mid: steps ? midN : null,
         capacity,
       });
     }
@@ -161,7 +177,7 @@ export default function SlotForm({
           </div>
         </div>
         <div>
-          <label className="label">İndirim oranı (%)</label>
+          <label className="label">{steps ? "Son 24 saatte indirim (%)" : "İndirim oranı (%)"}</label>
           <input
             type="number"
             className="input"
@@ -183,6 +199,44 @@ export default function SlotForm({
             onChange={(e) => set("capacity", e.target.value)}
           />
         </div>
+      </div>
+
+      <div className="rounded-xl bg-gray-50 p-4">
+        <label className="flex cursor-pointer items-center gap-2 font-semibold">
+          <input
+            type="checkbox"
+            checked={steps}
+            onChange={(e) => {
+              setSteps(e.target.checked);
+              if (e.target.checked) {
+                const b = Number(form.discount_percent) || 20;
+                setMid(String(Math.min(70, b + 10)));
+                setFar(String(Math.min(70, b + 20)));
+              }
+            }}
+          />
+          İndirim zamanla azalsın
+        </label>
+        {steps && (
+          <div className="mt-3 space-y-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">2+ gün önce (%)</label>
+                <input type="number" className="input" min={5} max={70} value={far}
+                  onChange={(e) => setFar(e.target.value)} />
+              </div>
+              <div>
+                <label className="label">1-2 gün önce (%)</label>
+                <input type="number" className="input" min={5} max={70} value={mid}
+                  onChange={(e) => setMid(e.target.value)} />
+              </div>
+            </div>
+            <p className="text-xs text-gray-600">
+              Müşteri erken ayırırsa daha yüksek indirim alır. Rezervasyon anındaki indirim o müşteriye
+              kilitlenir. Örnek: %{far || "?"} → %{mid || "?"} → %{form.discount_percent || "?"}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="rounded-xl bg-gray-50 p-4">
