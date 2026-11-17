@@ -1,5 +1,6 @@
 "use client";
 
+import { mapsEmbed, mapsLink } from "@/lib/maps";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -13,6 +14,11 @@ type Rest = {
   phone: string | null;
   approved: boolean;
   created_at: string;
+  address: string | null;
+  category: string | null;
+  description: string | null;
+  instagram: string | null;
+  menu_url: string | null;
 };
 type ReviewRow = {
   id: string;
@@ -90,7 +96,7 @@ export default function AdminPage() {
     const [r, rv, d, sl] = await Promise.all([
       supabase
         .from("restaurants")
-        .select("id, name, district, phone, approved, created_at")
+        .select("id, name, district, phone, approved, created_at, address, category, description, instagram, menu_url")
         .order("created_at", { ascending: false }),
       supabase
         .from("reservations")
@@ -300,7 +306,8 @@ export default function AdminPage() {
         <div className="space-y-3">
           {sortedRestaurants.length === 0 && <p className="text-gray-600">Henüz restoran yok.</p>}
           {sortedRestaurants.map((r) => (
-            <div key={r.id} className="card flex flex-wrap items-center justify-between gap-3">
+            <div key={r.id} className="card space-y-3">
+             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-lg font-bold">{r.name}</p>
                 <p className="text-sm text-gray-600">
@@ -325,6 +332,60 @@ export default function AdminPage() {
                   </button>
                 )}
               </div>
+             </div>
+
+             <details className="rounded-xl bg-gray-50 p-3" open={!r.approved}>
+              <summary className="cursor-pointer text-sm font-semibold text-[#0a4430]">
+                Başvuru bilgileri ve harita
+              </summary>
+              <dl className="mt-3 space-y-1.5 text-sm">
+                <div className="flex gap-3"><dt className="w-20 shrink-0 text-gray-500">Tür</dt><dd>{r.category ?? "—"}</dd></div>
+                <div className="flex gap-3"><dt className="w-20 shrink-0 text-gray-500">Adres</dt><dd>{r.address ?? "—"}</dd></div>
+                <div className="flex gap-3">
+                  <dt className="w-20 shrink-0 text-gray-500">Telefon</dt>
+                  <dd>
+                    {r.phone ? (
+                      <a href={`tel:${r.phone}`} className="text-[#14664a] underline">{r.phone}</a>
+                    ) : "—"}
+                  </dd>
+                </div>
+                <div className="flex gap-3">
+                  <dt className="w-20 shrink-0 text-gray-500">Instagram</dt>
+                  <dd>
+                    {r.instagram ? (
+                      <a href={`https://instagram.com/${r.instagram}`} target="_blank" rel="noopener noreferrer" className="text-[#14664a] underline">
+                        @{r.instagram}
+                      </a>
+                    ) : "—"}
+                  </dd>
+                </div>
+                <div className="flex gap-3">
+                  <dt className="w-20 shrink-0 text-gray-500">Menü</dt>
+                  <dd>
+                    {r.menu_url ? (
+                      <a href={r.menu_url} target="_blank" rel="noopener noreferrer" className="text-[#14664a] underline">Menüyü aç</a>
+                    ) : "—"}
+                  </dd>
+                </div>
+                {r.description && (
+                  <div className="flex gap-3"><dt className="w-20 shrink-0 text-gray-500">Tanıtım</dt><dd>{r.description}</dd></div>
+                )}
+              </dl>
+              <iframe
+                title={`${r.name} haritası`}
+                src={mapsEmbed(r.name, r.district, r.address)}
+                loading="lazy"
+                className="mt-3 h-56 w-full rounded-lg border-0"
+              />
+              <a
+                href={mapsLink(r.name, r.district, r.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-sm text-[#14664a] underline"
+              >
+                Google Haritalar'da aç
+              </a>
+             </details>
             </div>
           ))}
         </div>

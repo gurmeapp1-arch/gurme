@@ -14,6 +14,7 @@ import { dayLabel } from "@/components/RestaurantCard";
 import type { PublicSlot } from "@/components/SlotCard";
 import CapacityBar from "@/components/CapacityBar";
 import { nextChangeText } from "@/lib/discount";
+import { mapsLink } from "@/lib/maps";
 import HeartButton from "@/components/HeartButton";
 import { useFavorites } from "@/lib/useFavorites";
 
@@ -118,6 +119,15 @@ function RestoranSayfasi() {
             <RatingBadge avg={info.avg_rating} count={info.review_count} />
           </div>
           {info.description && <p className="mt-3 text-gray-700">{info.description}</p>}
+
+          <a
+            href={mapsLink(info.restaurant_name, info.district, info.address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-[#0a4430] ring-1 ring-gray-300 hover:bg-gray-50"
+          >
+            📍 Haritada göster · yol tarifi
+          </a>
 
           {(info.hours || info.instagram || info.menu_url) && (
             <dl className="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm">
