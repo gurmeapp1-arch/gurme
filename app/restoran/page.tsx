@@ -390,12 +390,12 @@ export default function RestoranPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="-mx-4 flex gap-1 overflow-x-auto border-b border-gray-200 px-4">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold sm:text-base ${
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold sm:px-4 sm:text-base ${
               tab === t.id
                 ? "border-[#0a4430] text-[#0a4430]"
                 : "border-transparent text-gray-500 hover:text-gray-800"

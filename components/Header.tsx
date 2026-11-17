@@ -34,14 +34,14 @@ export default function Header() {
 
   return (
     <header className="site-header">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2 sm:py-3">
         <Link href={home} className="flex items-center gap-2" aria-label="Gurme ana sayfa">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/img/pasta.webp" alt="" width={44} height={36} className="h-9 w-auto" />
-          <span className="text-2xl font-extrabold tracking-tight text-[#ebb035]">Gurme</span>
+          <span className="text-xl font-extrabold tracking-tight text-[#ebb035] sm:text-2xl">Gurme</span>
         </Link>
 
-        <nav className="flex flex-wrap items-center gap-1 text-sm font-semibold">
+        <nav className="flex flex-wrap items-center gap-0.5 text-[13px] font-semibold sm:gap-1 sm:text-sm">
           {navFor(profile?.role).map((item) => (
             <Link key={item.href} href={item.href} className="nav-link">
               {item.label}
