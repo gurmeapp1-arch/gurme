@@ -5,8 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
-import { downloadCsv } from "@/lib/csv";
-import { useNow } from "@/lib/useNow";
 
 type Status = "confirmed" | "cancelled" | "attended" | "no_show";
 type Rest = {
@@ -37,8 +35,6 @@ type UserRow = {
   role: string;
   created_at: string;
   restaurant_name: string | null;
-  no_show_count?: number;
-  booking_override?: boolean;
 };
 type Row = {
   id: string;
@@ -83,7 +79,6 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 
 export default function AdminPage() {
   const { user, profile, loading } = useAuth();
-  const now = useNow();
   const [restaurants, setRestaurants] = useState<Rest[] | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [dinerCount, setDinerCount] = useState(0);
@@ -149,16 +144,6 @@ export default function AdminPage() {
       : `${u.email}. Bu kullanıcının rezervasyonları ve yorumları da silinir`;
     if (!confirm(`Silinecek: ${what}. Bu işlem geri alınamaz. Emin misin?`)) return;
     const { error } = await supabase.rpc("admin_delete_user", { p_user_id: u.id });
-    if (error) setMsg(error.message);
-    else load();
-  }
-
-  async function setOverride(u: UserRow, allow: boolean) {
-    setMsg("");
-    const { error } = await supabase.rpc("admin_set_booking_override", {
-      p_user_id: u.id,
-      p_allow: allow,
-    });
     if (error) setMsg(error.message);
     else load();
   }
@@ -275,10 +260,6 @@ export default function AdminPage() {
             <Stat label="Onaylı restoran" value={restaurants.length - pending} />
             <Stat label="Müşteri sayısı" value={dinerCount} />
             <Stat label="Açılan slot" value={slotCount} />
-            <Stat
-              label="Son 7 günde rezervasyon"
-              value={now ? rows.filter((x) => new Date(x.created_at).getTime() > now.getTime() - 7 * 86400000).length : 0}
-            />
             <Stat label="Henüz işaretlenmemiş" value={cnt("confirmed")} />
           </div>
 
@@ -300,81 +281,6 @@ export default function AdminPage() {
           </div>
 
           <div className="card">
-            <h2 className="mb-1 text-xl font-bold">Verileri indir (yedek)</h2>
-            <p className="mb-3 text-sm text-gray-600">
-              Excel'de açılabilen CSV dosyaları. Haftada bir indirip saklamanı öneririm. Rezervasyon listesi
-              son 1000 kaydı içerir.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="btn btn-sm"
-                onClick={() =>
-                  downloadCsv(
-                    "gurme-rezervasyonlar.csv",
-                    ["Kod", "Restoran", "Tarih", "Başlangıç", "Bitiş", "Kişi", "İndirim %", "Ad", "Telefon", "Durum", "Oluşturulma"],
-                    rows.map((r) => [
-                      r.code,
-                      r.slot.restaurant.name,
-                      r.slot.slot_date,
-                      hm(r.slot.start_time),
-                      hm(r.slot.end_time),
-                      r.party_size,
-                      r.slot.discount_percent,
-                      r.reservation_name,
-                      r.phone,
-                      STATUS_LABEL[r.status],
-                      r.created_at,
-                    ])
-                  )
-                }
-              >
-                Rezervasyonlar
-              </button>
-              <button
-                className="btn btn-sm"
-                onClick={() =>
-                  downloadCsv(
-                    "gurme-restoranlar.csv",
-                    ["Ad", "Tür", "Semt", "Adres", "Telefon", "Instagram", "Onaylı", "Kayıt"],
-                    restaurants.map((r) => [
-                      r.name, r.category, r.district, r.address, r.phone, r.instagram,
-                      r.approved ? "evet" : "hayır", r.created_at,
-                    ])
-                  )
-                }
-              >
-                Restoranlar
-              </button>
-              <button
-                className="btn btn-sm"
-                onClick={() =>
-                  downloadCsv(
-                    "gurme-kullanicilar.csv",
-                    ["Ad", "E-posta", "Telefon", "Rol", "İşletme", "Gelmeme sayısı", "Kayıt"],
-                    users.map((u) => [
-                      u.full_name, u.email, u.phone, u.role, u.restaurant_name, u.no_show_count ?? 0, u.created_at,
-                    ])
-                  )
-                }
-              >
-                Kullanıcılar
-              </button>
-              <button
-                className="btn btn-sm"
-                onClick={() =>
-                  downloadCsv(
-                    "gurme-yorumlar.csv",
-                    ["Restoran", "Puan", "Yorum", "Tarih"],
-                    reviews.map((r) => [r.restaurant?.name, r.rating, r.comment, r.created_at])
-                  )
-                }
-              >
-                Yorumlar
-              </button>
-            </div>
-          </div>
-
-          <div className="card">
             <h2 className="mb-3 text-xl font-bold">Restoran başına</h2>
             <ul className="divide-y text-sm">
               {restaurants.map((r) => {
@@ -382,14 +288,11 @@ export default function AdminPage() {
                 const a = mine.filter((x) => x.status === "attended").length;
                 const n = mine.filter((x) => x.status === "no_show").length;
                 const active = mine.filter((x) => x.status !== "cancelled").length;
-                const week = now
-                  ? mine.filter((x) => new Date(x.created_at).getTime() > now.getTime() - 7 * 86400000).length
-                  : 0;
                 return (
                   <li key={r.id} className="flex flex-wrap justify-between gap-2 py-2">
                     <span className="font-semibold">{r.name}</span>
                     <span>
-                      {active} rezervasyon (son 7 gün: {week}) · {a} geldi · {n} gelmedi · gelmeme {rate(a, n)}
+                      {active} rezervasyon · {a} geldi · {n} gelmedi · gelmeme {rate(a, n)}
                     </span>
                   </li>
                 );
@@ -511,35 +414,15 @@ export default function AdminPage() {
                     </span>
                   </p>
                   <p className="break-all text-gray-600">{u.email}</p>
-                  {(u.no_show_count ?? 0) > 0 && (
-                    <p
-                      className="mt-0.5 text-xs font-semibold"
-                      style={{ color: (u.no_show_count ?? 0) >= 2 && !u.booking_override ? "#b91c1c" : "#92400e" }}
-                    >
-                      {u.no_show_count} kez gelmedi
-                      {(u.no_show_count ?? 0) >= 2 && !u.booking_override ? " · rezervasyon yapamıyor" : ""}
-                      {u.booking_override ? " · izin verildi" : ""}
-                    </p>
-                  )}
                   <p className="text-xs text-gray-500">
                     {u.restaurant_name ? `${u.restaurant_name} · ` : ""}
                     {u.phone ? `${u.phone} · ` : ""}Kayıt: {fmtDay(u.created_at.slice(0, 10))}
                   </p>
                 </div>
                 {u.role !== "admin" && (
-                  <div className="flex items-center gap-4">
-                    {u.role === "diner" && ((u.no_show_count ?? 0) >= 2 || u.booking_override) && (
-                      <button
-                        onClick={() => setOverride(u, !u.booking_override)}
-                        className="text-[#14664a] underline"
-                      >
-                        {u.booking_override ? "İzni kaldır" : "Yeniden izin ver"}
-                      </button>
-                    )}
-                    <button onClick={() => deleteUser(u)} className="text-red-700 underline">
-                      Sil
-                    </button>
-                  </div>
+                  <button onClick={() => deleteUser(u)} className="text-red-700 underline">
+                    Sil
+                  </button>
                 )}
               </div>
             ))}
