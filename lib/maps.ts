@@ -4,6 +4,3 @@ const query = (name: string, district: string, address?: string | null) =>
 
 export const mapsLink = (name: string, district: string, address?: string | null) =>
   `https://www.google.com/maps/search/?api=1&query=${query(name, district, address)}`;
-
-export const mapsEmbed = (name: string, district: string, address?: string | null) =>
-  `https://www.google.com/maps?q=${query(name, district, address)}&output=embed`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { mapsEmbed, mapsLink } from "@/lib/maps";
+import { mapsLink } from "@/lib/maps";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -336,7 +336,7 @@ export default function AdminPage() {
 
              <details className="rounded-xl bg-gray-50 p-3" open={!r.approved}>
               <summary className="cursor-pointer text-sm font-semibold text-[#0a4430]">
-                Başvuru bilgileri ve harita
+                Başvuru bilgileri
               </summary>
               <dl className="mt-3 space-y-1.5 text-sm">
                 <div className="flex gap-3"><dt className="w-20 shrink-0 text-gray-500">Tür</dt><dd>{r.category ?? "—"}</dd></div>
@@ -371,17 +371,11 @@ export default function AdminPage() {
                   <div className="flex gap-3"><dt className="w-20 shrink-0 text-gray-500">Tanıtım</dt><dd>{r.description}</dd></div>
                 )}
               </dl>
-              <iframe
-                title={`${r.name} haritası`}
-                src={mapsEmbed(r.name, r.district, r.address)}
-                loading="lazy"
-                className="mt-3 h-56 w-full rounded-lg border-0"
-              />
               <a
                 href={mapsLink(r.name, r.district, r.address)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-block text-sm text-[#14664a] underline"
+                className="mt-3 inline-block text-sm text-[#14664a] underline"
               >
                 Google Haritalar'da aç
               </a>
